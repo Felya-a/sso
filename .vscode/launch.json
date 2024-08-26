@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Старт go программы",
+            "type": "go",
+            "request": "launch",
+            "noDebug": true,
+            "program": "${workspaceFolder}/cmd/sso/main.go",
+            "cwd": "${workspaceFolder}",
+            "env": {},
+            "args": ["--config", "config/local.yml"]
+        }
+    ]
+}
