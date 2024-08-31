@@ -6,7 +6,9 @@ import (
 	"net"
 
 	authgrpc "sso/internal/grpc/auth"
+	authService "sso/internal/services/auth"
 
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
 )
 
@@ -17,12 +19,12 @@ type App struct {
 }
 
 func New(
+	db *sqlx.DB,
 	log *slog.Logger,
 	port string,
 ) *App {
 	gRPCServer := grpc.NewServer()
-
-	authgrpc.Register(gRPCServer)
+	authgrpc.Register(gRPCServer, authService.New(db, log))
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,

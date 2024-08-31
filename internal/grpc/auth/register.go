@@ -8,30 +8,28 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type LoginRequestValidate struct {
+type RegisterRequestValidate struct {
 	Email    string `validate:"required,email"`
 	Password string `validate:"required"`
-	AppId    int    `validate:"required"`
 }
 
-func (s *serverApi) Login(
+func (s *serverApi) Register(
 	ctx context.Context,
-	req *ssov1.LoginRequest,
-) (*ssov1.LoginResponse, error) {
+	req *ssov1.RegisterRequest,
+) (*ssov1.RegisterResponse, error) {
 	dto := LoginRequestValidate{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
-		AppId:    int(req.GetAppId()),
 	}
 
 	if err := s.validator.Struct(dto); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	token, err := s.auth.Login(ctx, dto.Email, dto.Password, dto.AppId)
+	userId, err := s.auth.RegisterNewUser(ctx, dto.Email, dto.Password)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &ssov1.LoginResponse{Token: token}, nil
+	return &ssov1.RegisterResponse{UserId: int64(userId)}, nil
 }

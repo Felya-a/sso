@@ -1,13 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"sso/internal/app"
 	"sso/internal/config"
 	"sso/internal/lib/logger/handlers/slogpretty"
+	"strconv"
 	"syscall"
+
+	_ "database/sql" // ?
+
+	_ "github.com/lib/pq"
+
+	"github.com/jmoiron/sqlx"
 )
 
 const (
@@ -21,23 +29,46 @@ func main() {
 
 	log := setupLogger(config.Env)
 
-	application := app.New(log, config.GrpcConfig.Port, "", config.TokenTtl)
+	db := mustConnectPostgres(config)
 
-	go application.GRPCServer.MustRun()
+	application := app.New(db, log, config.Grpc.Port)
+
+	go application.GrpcServer.MustRun()
 
 	log.Info("Starting application", slog.Any("env", config.Env))
 
 	// Graceful shutdown
-	stop := make(chan os.Signal)
-	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
-
-	sgnl := <-stop
-
+	sgnl := gracefulShutdown()
 	log.Info("Stopping application", slog.String("signal", sgnl.String()))
 
-	application.GRPCServer.Stop()
+	application.GrpcServer.Stop()
+	db.Close()
 
 	log.Info("Application stopped")
+}
+
+func mustConnectPostgres(config config.Config) *sqlx.DB {
+	db, err := sqlx.Open(
+		"postgres",
+		fmt.Sprintf(
+			"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+			config.Postgres.Host,
+			strconv.Itoa(config.Postgres.Port),
+			config.Postgres.User,
+			config.Postgres.Database,
+			config.Postgres.Password,
+			"disable",
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := db.Ping(); err != nil {
+		panic(err)
+	}
+
+	return db
 }
 
 func setupLogger(env string) *slog.Logger {
@@ -65,4 +96,12 @@ func setupPrettySlog() *slog.Logger {
 	handler := opts.NewPrettyHandler(os.Stdout)
 
 	return slog.New(handler)
+}
+
+func gracefulShutdown() os.Signal {
+	stop := make(chan os.Signal)
+	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+
+	sgnl := <-stop
+	return sgnl
 }

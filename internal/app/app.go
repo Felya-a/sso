@@ -3,20 +3,20 @@ package app
 import (
 	"log/slog"
 	grpcapp "sso/internal/app/grpc"
-	"time"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type App struct {
-	GRPCServer *grpcapp.App
+	GrpcServer *grpcapp.App
 }
 
 func New(
+	db *sqlx.DB,
 	log *slog.Logger,
 	grpcPort string,
-	storagePath string,
-	tokenTTL time.Duration,
 ) *App {
-	grpcApp := grpcapp.New(log, grpcPort)
+	grpcApp := grpcapp.New(db, log, grpcPort)
 
-	return &App{GRPCServer: grpcApp}
+	return &App{GrpcServer: grpcApp}
 }
