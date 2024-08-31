@@ -99,7 +99,7 @@ func setupPrettySlog() *slog.Logger {
 }
 
 func gracefulShutdown() os.Signal {
-	stop := make(chan os.Signal)
+	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	sgnl := <-stop
