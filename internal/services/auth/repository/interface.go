@@ -10,7 +10,7 @@ type UserRepository interface {
 		ctx context.Context,
 		email string,
 		passHash []byte,
-	) (uid int64, err error)
+	) (err error)
 	GetByEmail(ctx context.Context, email string) (models.User, error)
 	IsAdmin(ctx context.Context, userID int64) (bool, error)
 }

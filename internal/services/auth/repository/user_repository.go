@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"sso/internal/domain/models"
 
@@ -23,8 +24,8 @@ func (r PostgresUserRepository) Save(
 	ctx context.Context,
 	email string,
 	passHash []byte,
-) (uid int64, err error) {
-	res := r.db.MustExec(`
+) (err error) {
+	_, err = r.db.Exec(`
 		insert into public.user (
 			email,
 			password
@@ -33,8 +34,13 @@ func (r PostgresUserRepository) Save(
 			$2
 		)
 	`, email, passHash)
-	id, _ := res.LastInsertId()
-	return id, nil
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (r PostgresUserRepository) GetByEmail(
@@ -54,7 +60,6 @@ func (r PostgresUserRepository) GetByEmail(
 		if errors.Is(err, sql.ErrNoRows) {
 			return models.User{}, nil
 		}
-		r.log.Debug(err.Error())
 		return models.User{}, err
 	}
 

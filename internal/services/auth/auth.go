@@ -8,6 +8,7 @@ import (
 	"sso/internal/domain/models"
 	"sso/internal/lib/jwt"
 	"sso/internal/lib/logger/sl"
+	"sync"
 
 	repo "sso/internal/services/auth/repository"
 
@@ -37,6 +38,7 @@ type AuthService struct {
 	log            *slog.Logger
 	appRepository  repo.AppRepository
 	userRepository repo.UserRepository
+	mu             sync.Mutex
 }
 
 // New returns a new instance of the Auth service.
@@ -108,6 +110,9 @@ func (a *AuthService) RegisterNewUser(
 		slog.String("op", op),
 		slog.String("email", email),
 	)
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
 	log.Info("registering user")
 
 	// Проверка наличия пользователя
@@ -128,14 +133,19 @@ func (a *AuthService) RegisterNewUser(
 	}
 
 	// Сохранение пользователя
-	userId, err := a.userRepository.Save(ctx, email, hashedPassword)
-	a.log.Debug("", userId)
-	if err != nil {
+	if err := a.userRepository.Save(ctx, email, hashedPassword); err != nil {
 		log.Error("failed to save user", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	return userId, nil
+	// Получение id созданного пользователя
+	user, err := a.userRepository.GetByEmail(ctx, email)
+	if err != nil {
+		log.Error("failed to get new user id", sl.Err(err))
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return user.ID, nil
 }
 
 func (a *AuthService) IsAdmin(

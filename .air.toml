@@ -2,9 +2,9 @@
 [build]
 # Команда для сборки проекта
 # cmd = "go run cmd/sso/main.go --config config/local.yml"
-cmd = "go build -o tmp/main.go cmd/sso/main.go"
+cmd = "go build -o tmp/main cmd/sso/main.go"
 # Путь к исполняемому файлу
-bin = "tmp/main.go"
+bin = "tmp/main"
 args_bin = ["--config config/local.yml"]
 # Укажите директории для включения
 include_dir = ["cmd", "internal", "config"]

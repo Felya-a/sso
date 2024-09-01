@@ -25,7 +25,6 @@ func (s *serverApi) Register(
 	}
 
 	if err := s.validator.Struct(dto); err != nil {
-		s.log.Debug(err.Error())
 		return nil, status.Error(codes.InvalidArgument, models.ErrInvalidCredentials.Error())
 	}
 
