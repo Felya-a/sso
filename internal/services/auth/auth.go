@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"sso/internal/config"
@@ -45,8 +44,8 @@ func New(
 	db *sqlx.DB,
 	log *slog.Logger,
 ) *AuthService {
-	userRepository := repo.NewPostgresUserRepository(db)
-	appRepository := repo.NewPostgresAppRepository(db)
+	userRepository := repo.NewPostgresUserRepository(db, log)
+	appRepository := repo.NewPostgresAppRepository(db, log)
 
 	return &AuthService{
 		log:            log,
@@ -70,13 +69,12 @@ func (a *AuthService) Login(
 
 	user, err := a.userRepository.GetByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, models.ErrUserNotFound) {
-			log.Warn("user not found", sl.Err(err))
-
-			return "", fmt.Errorf("%s: %w", op, models.ErrInvalidCredentials)
-		}
 		log.Error("failed to get user info from repository", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, err)
+	}
+	if user.ID == 0 {
+		log.Warn("user not found")
+		return "", models.ErrInvalidCredentials
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
@@ -128,10 +126,10 @@ func (a *AuthService) RegisterNewUser(
 		log.Error("failed to generate password hash", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	log.Debug("hashedPassword: ", hashedPassword) // DEBUG
 
 	// Сохранение пользователя
 	userId, err := a.userRepository.Save(ctx, email, hashedPassword)
+	a.log.Debug("", userId)
 	if err != nil {
 		log.Error("failed to save user", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)

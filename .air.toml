@@ -1,0 +1,22 @@
+# Конфигурация сборки
+[build]
+# Команда для сборки проекта
+# cmd = "go run cmd/sso/main.go --config config/local.yml"
+cmd = "go build -o tmp/main.go cmd/sso/main.go"
+# Путь к исполняемому файлу
+bin = "tmp/main.go"
+args_bin = ["--config config/local.yml"]
+# Укажите директории для включения
+include_dir = ["cmd", "internal", "config"]
+# Укажите директории для исключения
+exclude_dir = []
+# Delay after sending Interrupt signal
+kill_delay = 1000 # ms
+stop_on_error = true
+send_interrupt = true
+log = "air.log"
+
+# Конфигурация файлового наблюдателя
+[watch]
+# Массив расширений файлов, за которыми нужно следить
+include_ext = ["go"]

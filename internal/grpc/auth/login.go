@@ -2,6 +2,8 @@ package auth
 
 import (
 	"context"
+	"errors"
+	"sso/internal/domain/models"
 
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
 	"google.golang.org/grpc/codes"
@@ -30,6 +32,9 @@ func (s *serverApi) Login(
 
 	token, err := s.auth.Login(ctx, dto.Email, dto.Password, dto.AppId)
 	if err != nil {
+		if errors.Is(err, models.ErrInvalidCredentials) {
+			return nil, status.Error(codes.Internal, models.ErrInvalidCredentials.Error())
+		}
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
