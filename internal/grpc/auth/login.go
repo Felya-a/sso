@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
-	"sso/internal/domain/models"
+	"sso/internal/models"
 
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
 	"google.golang.org/grpc/codes"

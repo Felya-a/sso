@@ -1,6 +1,7 @@
 package grpcapp
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 )
 
 type App struct {
@@ -18,14 +20,51 @@ type App struct {
 	port       string
 }
 
+func LoggerInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+	log *slog.Logger,
+) (resp interface{}, err error) {
+	log.Info("Received request: %v", req)
+	log.Info("Received request: %v", info.FullMethod)
+
+	// Вызываем основной обработчик
+	resp, err = handler(ctx, req)
+
+	// Логируем ответ и ошибку, если она есть
+	if err != nil {
+		log.Error("Method: %s, Error: %v", info.FullMethod, status.Convert(err).Message())
+	} else {
+		log.Info("Response: %v", resp)
+	}
+
+	return resp, err
+}
+
+func LoggerInterceptorWithLog(log *slog.Logger) grpc.UnaryServerInterceptor {
+	return func(
+		ctx context.Context,
+		req interface{},
+		info *grpc.UnaryServerInfo,
+		handler grpc.UnaryHandler,
+	) (resp interface{}, err error) {
+		return LoggerInterceptor(ctx, req, info, handler, log)
+	}
+}
+
 func New(
 	db *sqlx.DB,
 	log *slog.Logger,
 	port string,
 ) *App {
+	// gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(LoggerInterceptor))
+	// gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(LoggerInterceptorWithLog(log)))
 	gRPCServer := grpc.NewServer()
 	authService := authService.New(db, log)
 	authgrpc.Register(log, gRPCServer, authService)
+
 	return &App{
 		log:        log,
 		gRPCServer: gRPCServer,

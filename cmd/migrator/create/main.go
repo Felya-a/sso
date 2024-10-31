@@ -22,7 +22,7 @@ var template = strings.TrimSpace(`
 -- +goose StatementEnd
 `)
 
-const pathDir = "./migrations"
+const MIGRATIONS_DIR = "./migrations"
 
 func main() {
 	var migrationName string
@@ -37,7 +37,7 @@ func main() {
 	fileName = fmt.Sprintf("%s%s.sql", utcDate, migrationName)
 
 	// Создание файла миграции
-	file, err := os.Create(filepath.Join(pathDir, fileName))
+	file, err := os.Create(filepath.Join(MIGRATIONS_DIR, fileName))
 	if err != nil {
 		log.Fatalf("failed to create file: %s", err)
 	}

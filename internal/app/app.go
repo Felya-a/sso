@@ -2,7 +2,7 @@ package app
 
 import (
 	"log/slog"
-	grpcapp "sso/internal/app/grpc"
+	grpcapp "sso/internal/transport/grpc"
 
 	"github.com/jmoiron/sqlx"
 )

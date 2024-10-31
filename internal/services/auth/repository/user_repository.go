@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sso/internal/domain/models"
+	authModels "sso/internal/services/auth/model"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -46,8 +46,8 @@ func (r PostgresUserRepository) Save(
 func (r PostgresUserRepository) GetByEmail(
 	ctx context.Context,
 	email string,
-) (models.User, error) {
-	var user models.User
+) (*authModels.UserModel, error) {
+	var user authModels.UserModel
 	err := r.db.Get(&user, `
 		select
 			id,
@@ -58,17 +58,10 @@ func (r PostgresUserRepository) GetByEmail(
 	`, email)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return models.User{}, nil
+			return &authModels.UserModel{}, nil
 		}
-		return models.User{}, err
+		return &authModels.UserModel{}, err
 	}
 
-	return user, nil
-}
-
-func (r PostgresUserRepository) IsAdmin(
-	ctx context.Context,
-	userID int64,
-) (bool, error) {
-	panic("not implemented")
+	return &user, nil
 }
