@@ -40,7 +40,7 @@ func New(
 	db *sqlx.DB,
 	log *slog.Logger,
 ) *AuthService {
-	userRepository := repository.NewPostgresUserRepository(db, log)
+	userRepository := repository.NewPostgresUserRepository(db)
 	registrationUser := usecase.RegistrationUserUseCase{Users: userRepository}
 	authenticateUser := usecase.AuthenticateUserUseCase{Users: userRepository}
 	generateToken := usecase.GenerateTokenUseCase{TokenTtl: config.Get().TokenTtl}
@@ -71,7 +71,7 @@ func (a *AuthService) Login(
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	token, err = a.generateToken.Execute(ctx, log, user, config.Get().TokenTtl, config.Get().JWTSecret)
+	token, err = a.generateToken.Execute(ctx, log, user, config.Get().JWTSecret)
 	if err != nil {
 		log.Error("failed on generate jwt token", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", op, err)

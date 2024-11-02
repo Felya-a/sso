@@ -32,3 +32,13 @@ update-protos:
 
 test:
 	go test -v ./...
+
+test-coverage:
+	go test -v -coverprofile=tmp/coverage.txt ./...; \
+	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html;
+
+ginkgo:
+	ginkgo -v ./...
+
+ginkgo-watch:
+	ginkgo watch -v ./...

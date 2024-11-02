@@ -18,10 +18,9 @@ func (uc *GenerateTokenUseCase) Execute(
 	ctx context.Context,
 	log *slog.Logger,
 	user *authModels.UserModel,
-	tokenTtl time.Duration,
 	JWTSecret string,
 ) (token string, err error) {
-	token, err = jwt.NetToken(jwt.UserParams{ID: user.ID, Email: user.Email}, tokenTtl, JWTSecret)
+	token, err = jwt.NewToken(jwt.JwtBodyParams{ID: user.ID, Email: user.Email}, uc.TokenTtl, JWTSecret)
 	if err != nil {
 		log.Error("failed to generate token", sl.Err(err))
 		return "", fmt.Errorf("%s: %w", "GenerateTokenUseCase", err)

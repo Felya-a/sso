@@ -5,19 +5,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log/slog"
 	authModels "sso/internal/services/auth/model"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type PostgresUserRepository struct {
-	db  *sqlx.DB
-	log *slog.Logger
+	db *sqlx.DB
 }
 
-func NewPostgresUserRepository(db *sqlx.DB, log *slog.Logger) *PostgresUserRepository {
-	return &PostgresUserRepository{db: db, log: log}
+func NewPostgresUserRepository(db *sqlx.DB) *PostgresUserRepository {
+	return &PostgresUserRepository{db: db}
 }
 
 func (r PostgresUserRepository) Save(

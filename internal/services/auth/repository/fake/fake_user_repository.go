@@ -1,15 +1,13 @@
-package fake_repository
+package auth
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
-	"sso/internal/models"
+	"errors"
+	auth "sso/internal/services/auth/model"
 )
 
 type FakeUserRepository struct {
 	users []user
-	log   *slog.Logger
 }
 
 type user struct {
@@ -18,40 +16,50 @@ type user struct {
 	Password []byte
 }
 
-func NewFakeUserRepository(log *slog.Logger) *FakeUserRepository {
-	return &FakeUserRepository{log: log}
+func NewFakeUserRepository() *FakeUserRepository {
+	return &FakeUserRepository{}
 }
 
 var counter int64
 
-func (r FakeUserRepository) Save(
+func (r *FakeUserRepository) Save(
 	ctx context.Context,
 	email string,
 	passHash []byte,
 ) (err error) {
-	fmt.Println("counter1: ", counter)
+
+	// For test only
+	if email == "need_error_on_save@local.com" {
+		return errors.New("error for test")
+	}
+
 	counter++
 	r.users = append(r.users, user{ID: counter, Email: email, Password: passHash})
-	fmt.Println(r.users)
-	fmt.Println("len(r.users)1: ", len(r.users))
 	return nil
 }
 
-func (r FakeUserRepository) GetByEmail(
+func (r *FakeUserRepository) GetByEmail(
 	ctx context.Context,
 	email string,
-) (models.UserModel, error) {
-	fmt.Println("counter2: ", counter)
-	var user models.UserModel
+) (*auth.UserModel, error) {
+	var user auth.UserModel
 
-	fmt.Println("len(r.users)2: ", len(r.users))
+	// For test only
+	if email == "need_error@local.com" {
+		return &user, errors.New("error for test")
+	}
+
+	// For test only
+	if email == "need_null@local.com" {
+		return &user, nil
+	}
+
 	for _, u := range r.users {
-		fmt.Println(u.Email, "==", email)
 		if u.Email == email {
-			user = models.UserModel{ID: u.ID, Email: u.Email, PassHash: u.Password}
+			user = auth.UserModel{ID: u.ID, Email: u.Email, PassHash: u.Password}
 			break
 		}
 	}
 
-	return user, nil
+	return &user, nil
 }
