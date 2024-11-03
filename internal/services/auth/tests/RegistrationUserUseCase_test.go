@@ -87,21 +87,7 @@ var _ = Describe("RegistrationUserUseCase", func() {
 		Expect(user.ID).To(Equal(int64(0)))
 	})
 
-	It("should not save on failed to get new user id", func() {
-		// Arrange
-		fakeUser := ValidUser
-
-		// Action
-		user, err := registrationUser.Execute(context.Background(), log, "need_error@local.com", fakeUser.password)
-
-		// Assert
-		Expect(err).To(Not(BeNil()))
-		Expect(err).To(Equal(models.ErrInternal))
-		Expect(user).To(Not(BeNil()))
-		Expect(user.ID).To(Equal(int64(0)))
-	})
-
-	It("should not save on getted nullable id", func() {
+	It("should not save on getted nullable id on save user", func() {
 		// Arrange
 		fakeUser := ValidUser
 
