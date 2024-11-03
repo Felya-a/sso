@@ -10,7 +10,7 @@ import (
 
 	"sso/internal/models"
 	repository "sso/internal/services/auth/repository"
-	fake "sso/internal/services/auth/repository/fake"
+	fake "sso/internal/services/auth/tests/unit/fake"
 	usecase "sso/internal/services/auth/use-case"
 )
 

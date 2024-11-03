@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path"
+	"strconv"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -40,30 +42,44 @@ func Get() Config {
 	return config
 }
 
-func GetPostgresUrl() string {
+func (c *Config) GetPostgresUrl() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%v/%s?sslmode=disable",
-		config.Postgres.User,
-		config.Postgres.Password,
-		config.Postgres.Host,
-		config.Postgres.Port,
-		config.Postgres.Database,
+		c.Postgres.User,
+		c.Postgres.Password,
+		c.Postgres.Host,
+		c.Postgres.Port,
+		c.Postgres.Database,
+	)
+}
+
+func (c *Config) GetPostgresConnectionString() string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		c.Postgres.Host,
+		strconv.Itoa(c.Postgres.Port),
+		c.Postgres.User,
+		c.Postgres.Database,
+		c.Postgres.Password,
+		"disable",
 	)
 }
 
 // MustLoad загружает конфигурацию из файла и возвращает её
 func MustLoad() Config {
-	path := fetchConfigPath()
+	configPath := fetchConfigPath()
 
-	if path == "" {
+	if configPath == "" {
 		panic("config path is empty. you need to specify --config=<file_path>")
 	}
 
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		panic("config file does not exist: " + path)
+	fullConfigPath := getAbsoluteConfigPath(configPath)
+
+	if _, err := os.Stat(fullConfigPath); os.IsNotExist(err) {
+		panic("config file does not exist: " + fullConfigPath)
 	}
 
-	if err := cleanenv.ReadConfig(path, &config); err != nil {
+	if err := cleanenv.ReadConfig(fullConfigPath, &config); err != nil {
 		panic("failed to read config: " + err.Error())
 	}
 
@@ -82,4 +98,14 @@ func fetchConfigPath() string {
 	}
 
 	return res
+}
+
+func getAbsoluteConfigPath(configPath string) string {
+	wdFromEnv := os.Getenv("WORKDIR_PATH")
+	wdFromOs, _ := os.Getwd()
+
+	if wdFromEnv != "" {
+		return path.Join(wdFromEnv, configPath)
+	}
+	return path.Join(wdFromOs, configPath)
 }

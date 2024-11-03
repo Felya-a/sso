@@ -17,7 +17,7 @@ import (
 const migrationsPath = "./migrations"
 
 func main() {
-	config.MustLoad()
+	config := config.MustLoad()
 	postgresURL := config.GetPostgresUrl()
 
 	var version int64 = -1

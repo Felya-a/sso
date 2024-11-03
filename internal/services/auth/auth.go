@@ -94,11 +94,15 @@ func (a *AuthService) RegisterNewUser(
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	log.Info("try registration user")
+
 	user, err := a.registrationUser.Execute(ctx, log, email, password)
 	if err != nil {
 		log.Error("failed on registration new user", sl.Err(err))
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
+
+	log.Info("new user success registered")
 
 	return user.ID, nil
 }

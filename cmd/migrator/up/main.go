@@ -15,7 +15,7 @@ import (
 const migrationsPath = "./migrations"
 
 func main() {
-	config.MustLoad()
+	config := config.MustLoad()
 	postgresURL := config.GetPostgresUrl()
 	// Подключение к базе данных
 	db, err := sql.Open("postgres", postgresURL)

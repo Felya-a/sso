@@ -1,24 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
 	"sso/internal/app"
 	"sso/internal/config"
 	"sso/internal/lib/logger/handlers/slogpretty"
-	"strconv"
+	"sso/internal/utils"
 	"syscall"
 
-	_ "database/sql" // ?
+	_ "database/sql"
 
 	_ "github.com/lib/pq"
-
-	"github.com/jmoiron/sqlx"
 )
 
 const (
+	envTest  = "test"
 	envLocal = "local"
 	envStage = "stage"
 	envProd  = "prod"
@@ -29,7 +27,7 @@ func main() {
 
 	log := setupLogger(config.Env)
 
-	db := mustConnectPostgres(config)
+	db := utils.MustConnectPostgres(config)
 
 	application := app.New(db, log, config.Grpc.Port)
 
@@ -47,35 +45,11 @@ func main() {
 	log.Info("Application stopped")
 }
 
-func mustConnectPostgres(config config.Config) *sqlx.DB {
-	db, err := sqlx.Open(
-		"postgres",
-		fmt.Sprintf(
-			"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-			config.Postgres.Host,
-			strconv.Itoa(config.Postgres.Port),
-			config.Postgres.User,
-			config.Postgres.Database,
-			config.Postgres.Password,
-			"disable",
-		),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	if err := db.Ping(); err != nil {
-		panic(err)
-	}
-
-	return db
-}
-
 func setupLogger(env string) *slog.Logger {
 	var log *slog.Logger
 
 	switch env {
-	case envLocal:
+	case envLocal, envTest:
 		log = setupPrettySlog()
 		// log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	case envStage:

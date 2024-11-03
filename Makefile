@@ -3,6 +3,9 @@
 run:
 	go run cmd/sso/main.go --config config/local.yml
 
+run-test:
+	go run cmd/sso/main.go --config config/test.yml
+
 # просто "build" почему-то не работал
 build-app:
 	go build -o build/main -a cmd/sso/main.go && echo "Build completed!"
@@ -38,7 +41,9 @@ test-coverage:
 	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html;
 
 ginkgo:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
 	ginkgo -v ./...
 
 ginkgo-watch:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
 	ginkgo watch -v ./...
