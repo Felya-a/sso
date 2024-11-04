@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"sso/internal/config"
+	"sso/internal/utils"
 
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
@@ -16,7 +17,7 @@ const migrationsPath = "./migrations"
 
 func main() {
 	config := config.MustLoad()
-	postgresURL := config.GetPostgresUrl()
+	postgresURL := utils.GetPostgresUrl(config)
 	// Подключение к базе данных
 	db, err := sql.Open("postgres", postgresURL)
 	if err != nil {

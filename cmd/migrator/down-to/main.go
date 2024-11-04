@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"sso/internal/config"
+	"sso/internal/utils"
 	"strconv"
 
 	_ "github.com/lib/pq"
@@ -18,7 +19,7 @@ const migrationsPath = "./migrations"
 
 func main() {
 	config := config.MustLoad()
-	postgresURL := config.GetPostgresUrl()
+	postgresURL := utils.GetPostgresUrl(config)
 
 	var version int64 = -1
 	version, err := strconv.ParseInt(os.Args[1], 10, 64)

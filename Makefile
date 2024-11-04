@@ -8,10 +8,12 @@ run-test:
 
 # просто "build" почему-то не работал
 build-app:
-	go build -o build/main -a cmd/sso/main.go && echo "Build completed!"
+	go build -o build/main -a cmd/sso/main.go && \
+	echo "Build completed!"
 
 build-app-with-logs:
-	go build -o build/main -a -v -x cmd/sso/main.go && echo "Build completed!"
+	go build -o build/main -a -v -x cmd/sso/main.go && \
+	echo "Build completed!"
 
 create-migration:
 	# Создаст два файла миграции с именем указанным в параметре name или по имени текущей ветки git
@@ -34,16 +36,14 @@ update-protos:
 	go get github.com/Felya-a/chat-app-protos
 
 test:
-	go test -v ./...
-
-test-coverage:
-	go test -v -coverprofile=tmp/coverage.txt ./...; \
-	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html;
-
-ginkgo:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
 	ginkgo -v ./...
 
-ginkgo-watch:
+test-watch:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
 	ginkgo watch -v ./...
+
+test-coverage:
+	go test -v -coverprofile=tmp/coverage.txt ./...; \
+	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html; \
+	echo "Файл "

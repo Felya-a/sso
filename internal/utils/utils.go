@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"sso/internal/config"
+	"strconv"
 
 	_ "database/sql"
 
@@ -17,7 +18,7 @@ import (
 )
 
 func MustConnectPostgres(config config.Config) *sqlx.DB {
-	db, err := sqlx.Open("postgres", config.GetPostgresConnectionString())
+	db, err := sqlx.Open("postgres", GetPostgresConnectionString(config))
 	if err != nil {
 		panic(err)
 	}
@@ -50,4 +51,27 @@ func GetWdPath() string {
 	}
 
 	return wdFromOs
+}
+
+func GetPostgresUrl(config config.Config) string {
+	return fmt.Sprintf(
+		"postgres://%s:%s@%s:%v/%s?sslmode=disable",
+		config.Postgres.User,
+		config.Postgres.Password,
+		config.Postgres.Host,
+		config.Postgres.Port,
+		config.Postgres.Database,
+	)
+}
+
+func GetPostgresConnectionString(config config.Config) string {
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		config.Postgres.Host,
+		strconv.Itoa(config.Postgres.Port),
+		config.Postgres.User,
+		config.Postgres.Database,
+		config.Postgres.Password,
+		"disable",
+	)
 }

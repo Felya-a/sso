@@ -2,10 +2,8 @@ package config
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path"
-	"strconv"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -40,29 +38,6 @@ var config Config
 // Get возвращает копию текущей конфигурации
 func Get() Config {
 	return config
-}
-
-func (c *Config) GetPostgresUrl() string {
-	return fmt.Sprintf(
-		"postgres://%s:%s@%s:%v/%s?sslmode=disable",
-		c.Postgres.User,
-		c.Postgres.Password,
-		c.Postgres.Host,
-		c.Postgres.Port,
-		c.Postgres.Database,
-	)
-}
-
-func (c *Config) GetPostgresConnectionString() string {
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		c.Postgres.Host,
-		strconv.Itoa(c.Postgres.Port),
-		c.Postgres.User,
-		c.Postgres.Database,
-		c.Postgres.Password,
-		"disable",
-	)
 }
 
 // MustLoad загружает конфигурацию из файла и возвращает её
