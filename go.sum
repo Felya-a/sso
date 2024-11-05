@@ -4,6 +4,8 @@ github.com/BurntSushi/toml v1.2.1 h1:9F2/+DoOYIOksmaJFPw1tGFy1eDnIJXg+UHjuD8lTak
 github.com/BurntSushi/toml v1.2.1/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/Felya-a/chat-app-protos v0.0.4 h1:z9iJ9+CyZxp1xrghuSCbzpFxh2V34hQBsqwqHghv96Q=
 github.com/Felya-a/chat-app-protos v0.0.4/go.mod h1:ok5s+/ZwsO25ngbCWluiszrysHTBXCPhrJjbQHdZ+Eg=
+github.com/Felya-a/chat-app-protos v0.0.5 h1:aJ9mo/xyPukeKZg5IpKydh2CAo+dByGsxcKgSYZVmqE=
+github.com/Felya-a/chat-app-protos v0.0.5/go.mod h1:ok5s+/ZwsO25ngbCWluiszrysHTBXCPhrJjbQHdZ+Eg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

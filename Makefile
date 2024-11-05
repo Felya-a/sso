@@ -1,18 +1,18 @@
 .SILENT:
 
 run:
-	go run cmd/sso/main.go --config config/local.yml
+	go run cmd/sso/main.go --config config/local.env
 
 run-test:
-	go run cmd/sso/main.go --config config/test.yml
+	go run cmd/sso/main.go --config config/test.env
 
 # просто "build" почему-то не работал
 build-app:
-	go build -o build/main -a cmd/sso/main.go && \
+	go build -o bin/sso -a cmd/sso/main.go && \
 	echo "Build completed!"
 
 build-app-with-logs:
-	go build -o build/main -a -v -x cmd/sso/main.go && \
+	go build -o bin/sso -a -v -x cmd/sso/main.go && \
 	echo "Build completed!"
 
 create-migration:
@@ -22,25 +22,25 @@ create-migration:
 	go run cmd/migrator/create/main.go --migration_name=$(or $(name),$(shell git rev-parse --abbrev-ref HEAD))
 
 migrate:
-	CONFIG_PATH="config/local.yml" go run cmd/migrator/up/main.go
+	CONFIG_PATH="config/local.env" go run cmd/migrator/up/main.go
 
 migrate-down-to:
 	if [ -z "$(version)" ]; then \
 		echo "Error: 'version' parameter is required."; \
 		exit 1; \
 	fi
-	CONFIG_PATH="config/local.yml" go run cmd/migrator/down-to/main.go $(version)
+	CONFIG_PATH="config/local.env" go run cmd/migrator/down-to/main.go $(version)
 
 # Обновит пакет до последней версии
 update-protos:
 	go get github.com/Felya-a/chat-app-protos
 
 test:
-	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo -v ./...
 
 test-watch:
-	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.yml \
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo watch -v ./...
 
 test-coverage:

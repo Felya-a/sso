@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+    sso:
+        image: registry.ifedoseev.ru/sso:v1
+        environment:
+            CONFIG_PATH: config/stage.env
+            ENV: stage
+            TOKEN_TTL: 1h
+            JWT_SECRET: 6yTTCUa1FofsNtanut2sBTzNWsqMzO
+            GRPC_PORT: 44044
+            GRPC_TIMEOUT: 10h
+            POSTGRES_USER: meet_space
+            POSTGRES_DATABASE: sso
+            POSTGRES_PASSWORD: nDm3b6D7eGwupcYaZsRe
+            POSTGRES_HOST: sso-db
+            POSTGRES_PORT: 5432
+        ports:
+            - "44044:44044"
+        depends_on:
+            - sso-db
+        networks:
+            - meet-space-network
+
+    sso-db:
+        image: postgres:16
+        environment:
+            POSTGRES_USER: meet_space
+            POSTGRES_PASSWORD: nDm3b6D7eGwupcYaZsRe
+            POSTGRES_DB: sso
+        ports:
+            - "127.0.0.1:5432:5432"
+        networks:
+            - meet-space-network
+        volumes:
+            - ./postgres_data:/var/lib/postgresql/data
+
+networks:
+    meet-space-network:

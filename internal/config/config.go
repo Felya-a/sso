@@ -11,26 +11,26 @@ import (
 
 // Config структура, содержащая всю конфигурацию
 type Config struct {
-	Env       string         `yaml:"env" env-required:"true"`
-	TokenTtl  time.Duration  `yaml:"token_ttl"`
-	JWTSecret string         `yaml:"jwt_secret"`
-	Grpc      GrpcConfig     `yaml:"grpc"`
-	Postgres  PostgresConfig `yaml:"postgres"`
+	Env       string        `env:"ENV" env-required:"true"`
+	TokenTtl  time.Duration `env:"TOKEN_TTL"`
+	JWTSecret string        `env:"JWT_SECRET"`
+	Grpc      GrpcConfig
+	Postgres  PostgresConfig
 }
 
 // PostgresConfig структура, содержащая настройки для подключения к Postgresql
 type PostgresConfig struct {
-	User     string `yaml:"user"`
-	Database string `yaml:"database"`
-	Password string `yaml:"password"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
+	User     string `env:"POSTGRES_USER"`
+	Database string `env:"POSTGRES_DATABASE"`
+	Password string `env:"POSTGRES_PASSWORD"`
+	Host     string `env:"POSTGRES_HOST"`
+	Port     int    `env:"POSTGRES_PORT"`
 }
 
 // GrpcConfig структура, содержащая настройки для gRPC
 type GrpcConfig struct {
-	Port    string `yaml:"port"`
-	Timeout string `yaml:"timeout"`
+	Port    string `env:"GRPC_PORT"`
+	Timeout string `env:"GRPC_TIMEOUT"`
 }
 
 var config Config
@@ -45,7 +45,7 @@ func MustLoad() Config {
 	configPath := fetchConfigPath()
 
 	if configPath == "" {
-		panic("config path is empty. you need to specify --config=<file_path>")
+		panic("config path is empty. you need to specify --config=<file_path> or environment CONFIG_PATH")
 	}
 
 	fullConfigPath := getAbsoluteConfigPath(configPath)

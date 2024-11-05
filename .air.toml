@@ -1,11 +1,10 @@
 # Конфигурация сборки
 [build]
 # Команда для сборки проекта
-# cmd = "go run cmd/sso/main.go --config config/local.yml"
 cmd = "go build -o tmp/main cmd/sso/main.go"
 # Путь к исполняемому файлу
 bin = "tmp/main"
-args_bin = ["--config config/local.yml"]
+args_bin = ["--config config/local.env"]
 # Укажите директории для включения
 include_dir = ["cmd", "internal", "config"]
 # Укажите директории для исключения
