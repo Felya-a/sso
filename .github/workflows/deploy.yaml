@@ -22,7 +22,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t sso:latest .
-          docker tag sso:latest $DOCKER_REGISTRY_USERNAME/sso:latest
+          docker tag sso:latest ${{ secrets.DOCKER_REGISTRY_USERNAME }}/sso:latest
 
       # Шаг 3: Запушить образ в Docker Registry
       - name: Push Docker image
