@@ -26,4 +26,4 @@ jobs:
 
       # Шаг 3: Запушить образ в Docker Registry
       - name: Push Docker image
-        run: docker push $DOCKER_REGISTRY_USERNAME/sso:latest
+        run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
