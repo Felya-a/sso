@@ -15,7 +15,9 @@ jobs:
           DOCKER_REGISTRY_HOST: ${{ secrets.DOCKER_REGISTRY_HOST }}
           DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}
           DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
-        run: echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin $DOCKER_REGISTRY_HOST
+        run: |
+          echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_HOST"
+
 
       # Шаг 2: Построить Docker-образ
       - name: Build Docker image
