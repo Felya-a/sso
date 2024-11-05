@@ -9,11 +9,18 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      # Шаг 2: Проверка значений переменных
+      - name: Check environment variables
+        run: |
+          echo "DOCKER_REGISTRY_HOST: ${{ secrets.DOCKER_REGISTRY_HOST }}"
+          echo "DOCKER_REGISTRY_USERNAME: ${{ secrets.DOCKER_REGISTRY_USERNAME }}"
+          # Не выводим DOCKER_REGISTRY_PASSWORD для безопасности
+          echo "DOCKER_REGISTRY_PASSWORD: [REDACTED]"
+
       # Шаг 1: Логин в Docker Registry (например, Docker Hub или GitHub Container Registry)
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin "${{ secrets.DOCKER_REGISTRY_HOST }}"
-
 
       # Шаг 2: Построить Docker-образ
       - name: Build Docker image
