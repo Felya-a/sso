@@ -30,6 +30,7 @@ jobs:
 
   test:
     runs-on: self-hosted
+    needs: build
     environment: stage
 
     steps:
