@@ -12,7 +12,7 @@ import (
 	usecase "sso/internal/services/auth/use-case"
 )
 
-var _ = Describe("GenerateTokenUseCase", func() {
+var _ = Describe("GenerateTokenUseCase", Label("unit"), func() {
 	var log *slog.Logger
 	var generateToken usecase.GenerateTokenUseCase
 

@@ -39,6 +39,14 @@ test:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo -v ./...
 
+test-unit:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
+	ginkgo -v --label-filter=unit ./...
+
+test-integration:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
+	ginkgo -v --label-filter=integration ./...
+
 test-watch:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo watch -v ./...

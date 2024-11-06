@@ -27,3 +27,19 @@ jobs:
       # Шаг 3: Запушить образ в Docker Registry
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
+
+  test:
+    runs-on: self-hosted
+    environment: stage
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Build Docker image
+        run: |
+          docker build -t sso:test -f Dockerfile.unittest .
+      
+      - name: Run Unit tests
+        run: |
+          docker run sso:test

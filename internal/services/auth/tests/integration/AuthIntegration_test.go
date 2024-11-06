@@ -25,7 +25,7 @@ import (
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
 )
 
-var _ = Describe("AuthIntegrationTest", Ordered, func() {
+var _ = Describe("AuthIntegrationTest", Label("integration"), Ordered, func() {
 	var db *sqlx.DB
 	var users *authRepository.PostgresUserRepository
 

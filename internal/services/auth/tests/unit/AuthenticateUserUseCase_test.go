@@ -15,7 +15,7 @@ import (
 	usecase "sso/internal/services/auth/use-case"
 )
 
-var _ = Describe("AuthenticateUserUseCase", func() {
+var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 	var log *slog.Logger
 	var userRepository repository.UserRepository
 	var authenticateUser usecase.AuthenticateUserUseCase
