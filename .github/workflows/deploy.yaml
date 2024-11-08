@@ -70,7 +70,7 @@ jobs:
 
   push:
     runs-on: self-hosted
-    needs: build
+    needs: test
     environment: stage
 
     steps:
