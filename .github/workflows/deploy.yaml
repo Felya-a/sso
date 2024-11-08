@@ -15,15 +15,15 @@ jobs:
 
       - name: Log in to Docker Hub
         run: |
-          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin "${{ secrets.DOCKER_REGISTRY_HOST }}"
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login --password-stdin -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" "${{ secrets.DOCKER_REGISTRY_HOST }}"
 
       - name: Build Docker image
         run: |
-          docker build -t github_runner/sso:latest .
-          docker tag github_runner/sso:latest ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
+          docker build -t github_runner/sso:test .
+          docker tag github_runner/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test
 
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
+      - name: Push Test Docker image
+        run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test
 
   test:
     runs-on: self-hosted
@@ -42,11 +42,43 @@ jobs:
         run: |
           docker run --rm github_runner/sso:test make test-unit
 
-      # # Вот тут нужно отправить команду на запуск билда для проведения интеграционного тестирования
-      # - name: Start Integration stand
-      #   run: |
-      #     ssh 
+      - name: Start Integration stand
+        run: |
+          echo ${{ secrets.DEPLOY_SSH_KEY }} > deploy_key.pem
+          ssh -i deploy_key.pem StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/test && docker compose down && docker compose up -d --build --force-recreate"
 
-      # - name: Run Integration tests
-      #   run: |
-      #     docker run --rm -e github_runner/sso:test make test-integration
+      - name: Run Integration tests
+        run:
+          docker run --rm
+            -e ENV=test
+            -e TOKEN_TTL=1h
+            -e JWT_SECRET=rMVNcr6fA0QV2J0985B6GAbRMwQ3Sp
+            -e GRPC_HOST=ifedoseev.ru
+            -e GRPC_PORT=44045
+            -e GRPC_TIMEOUT=10h
+            -e POSTGRES_USER=meet_space
+            -e POSTGRES_DATABASE=sso
+            -e POSTGRES_PASSWORD=nDm3b6D7eGwupcYaZsRe
+            -e POSTGRES_HOST=ifedoseev.ru
+            -e POSTGRES_PORT=5532
+            github_runner/sso:test make test-integration
+
+      - name: Stop Integration stand
+        run: |
+          ssh -i deploy_key.pem StrictHostKeyChecking=no root@ifedoseev.ru "cd chat_app/test && docker compose down"
+          rm deploy_key.pem
+
+  push:
+    runs-on: self-hosted
+    needs: build
+    environment: stage
+
+    steps:
+      - name: Push Stage Docker image
+        run: |
+          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
+
+      - name: Delete Docker images
+        run: |
+          docker rmi -f github_runner/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage

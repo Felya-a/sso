@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path"
 	"time"
@@ -12,24 +13,25 @@ import (
 // Config структура, содержащая всю конфигурацию
 type Config struct {
 	Env       string        `env:"ENV" env-required:"true"`
-	TokenTtl  time.Duration `env:"TOKEN_TTL"`
-	JWTSecret string        `env:"JWT_SECRET"`
+	TokenTtl  time.Duration `env:"TOKEN_TTL" env-required:"true"`
+	JWTSecret string        `env:"JWT_SECRET" env-required:"true"`
 	Grpc      GrpcConfig
 	Postgres  PostgresConfig
 }
 
 // PostgresConfig структура, содержащая настройки для подключения к Postgresql
 type PostgresConfig struct {
-	User     string `env:"POSTGRES_USER"`
-	Database string `env:"POSTGRES_DATABASE"`
-	Password string `env:"POSTGRES_PASSWORD"`
-	Host     string `env:"POSTGRES_HOST"`
-	Port     int    `env:"POSTGRES_PORT"`
+	User     string `env:"POSTGRES_USER" env-required:"true"`
+	Database string `env:"POSTGRES_DATABASE" env-required:"true"`
+	Password string `env:"POSTGRES_PASSWORD" env-required:"true"`
+	Host     string `env:"POSTGRES_HOST" env-required:"true"`
+	Port     int    `env:"POSTGRES_PORT" env-required:"true"`
 }
 
 // GrpcConfig структура, содержащая настройки для gRPC
 type GrpcConfig struct {
-	Port    string `env:"GRPC_PORT"`
+	Host    string `env:"GRPC_HOST" env-required:"true" env-description:"gRPC server host for tests"`
+	Port    string `env:"GRPC_PORT" env-required:"true"`
 	Timeout string `env:"GRPC_TIMEOUT"`
 }
 
@@ -42,6 +44,15 @@ func Get() Config {
 
 // MustLoad загружает конфигурацию из файла и возвращает её
 func MustLoad() Config {
+	// Чтение переменных из окружения
+	err := cleanenv.ReadEnv(&config)
+	if err == nil {
+		return config
+	} else {
+		fmt.Println("error on read raw env: " + err.Error())
+	}
+
+	// Чтение переменных из конфигурационного файла
 	configPath := fetchConfigPath()
 
 	if configPath == "" {

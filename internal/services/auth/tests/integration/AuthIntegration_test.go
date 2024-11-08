@@ -37,7 +37,7 @@ var _ = Describe("AuthIntegrationTest", Label("integration"), Ordered, func() {
 		db = utils.MustConnectPostgres(config)
 		Expect(db).NotTo(BeNil())
 
-		conn, err := grpc.NewClient(fmt.Sprintf("localhost:%s", config.Grpc.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", config.Grpc.Host, config.Grpc.Port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		Expect(err).NotTo(HaveOccurred())
 		grpcClient = ssov1.NewAuthClient(conn)
 
