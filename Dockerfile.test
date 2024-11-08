@@ -10,6 +10,3 @@ COPY . .
 # Установка инструментов тестирования
 RUN go install github.com/onsi/ginkgo/v2/ginkgo
 RUN go get github.com/onsi/gomega/...
-
-# Проводим unit тестирование
-CMD ["make", "test-unit"]

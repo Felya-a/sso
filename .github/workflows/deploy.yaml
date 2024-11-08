@@ -13,18 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Шаг 1: Логин в Docker Registry (например, Docker Hub или GitHub Container Registry)
       - name: Log in to Docker Hub
         run: |
           echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" --password-stdin "${{ secrets.DOCKER_REGISTRY_HOST }}"
 
-      # Шаг 2: Построить Docker-образ
       - name: Build Docker image
         run: |
-          docker build -t sso:latest .
-          docker tag sso:latest ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
+          docker build -t github_runner/sso:latest .
+          docker tag github_runner/sso:latest ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
 
-      # Шаг 3: Запушить образ в Docker Registry
       - name: Push Docker image
         run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:latest
 
@@ -39,8 +36,17 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build -t sso:test -f Dockerfile.unittest .
+          docker build -t github_runner/sso:test -f Dockerfile.test .
       
       - name: Run Unit tests
         run: |
-          docker run sso:test
+          docker run --rm github_runner/sso:test make test-unit
+
+      # # Вот тут нужно отправить команду на запуск билда для проведения интеграционного тестирования
+      # - name: Start Integration stand
+      #   run: |
+      #     ssh 
+
+      # - name: Run Integration tests
+      #   run: |
+      #     docker run --rm -e github_runner/sso:test make test-integration
