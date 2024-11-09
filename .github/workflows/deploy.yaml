@@ -43,8 +43,10 @@ jobs:
           docker run --rm github_runner/sso:test make test-unit
 
       - name: Start Integration stand
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
         run: |
-          echo ${{ secrets.DEPLOY_SSH_KEY }} > deploy_key.pem
+          echo $DEPLOY_SSH_KEY > deploy_key.pem
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/test && docker compose down && docker compose up -d --build --force-recreate"
 
       - name: Run Integration tests
