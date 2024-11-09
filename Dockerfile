@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=builder /build/bin/sso /app
 COPY --from=builder /build/config /app/config
+COPY --from=builder /build/migrations /app/migrations
 
 RUN chmod +x /app/sso
 
