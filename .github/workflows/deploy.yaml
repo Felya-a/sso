@@ -85,3 +85,17 @@ jobs:
       - name: Delete Docker images
         run: |
           docker rmi -f github_runner/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
+
+  deploy-stage:
+    runs-on: self-hosted
+    needs: test
+    environment: stage
+
+    steps:
+      - name: Start Integration stand
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          echo "$DEPLOY_SSH_KEY" > deploy_key.pem
+          chmod 600 deploy_key.pem
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/stage && docker compose down && docker compose up -d --build --force-recreate"
