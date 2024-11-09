@@ -68,7 +68,7 @@ jobs:
 
       - name: Stop Integration stand
         run: |
-          ssh -i deploy_key.pem StrictHostKeyChecking=no root@ifedoseev.ru "cd chat_app/test && docker compose down"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd chat_app/test && docker compose down"
           rm deploy_key.pem
 
   push:
