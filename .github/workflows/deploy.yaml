@@ -45,7 +45,7 @@ jobs:
       - name: Start Integration stand
         run: |
           echo ${{ secrets.DEPLOY_SSH_KEY }} > deploy_key.pem
-          ssh -i deploy_key.pem StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/test && docker compose down && docker compose up -d --build --force-recreate"
+          ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/test && docker compose down && docker compose up -d --build --force-recreate"
 
       - name: Run Integration tests
         run:
