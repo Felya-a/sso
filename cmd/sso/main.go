@@ -28,6 +28,7 @@ func main() {
 	log := setupLogger(config.Env)
 
 	db := utils.MustConnectPostgres(config)
+	utils.Migrate(db)
 
 	application := app.New(db, log, config.Grpc.Port)
 
