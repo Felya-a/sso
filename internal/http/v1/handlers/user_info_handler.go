@@ -55,29 +55,3 @@ func GetUserInfoHandler(authService authService.Auth) gin.HandlerFunc {
 		ctx.JSON(http.StatusOK, response.FormatResponse())
 	}
 }
-
-// func userInfo(ctx *gin.Context) {
-// 	authorizationHeader := ctx.Request.Header.Get("Authorization")
-
-// 	if authorizationHeader == "" {
-// 		ctx.JSON(401, gin.H{"error": "Authorization header is missing"})
-// 		return
-// 	}
-
-// 	fmt.Printf("authorizationHeader: %v\n", authorizationHeader)
-
-// 	accessToken := strings.TrimPrefix(authorizationHeader, "Bearer ")
-
-// 	fmt.Println(accessToken)
-
-// 	ctx.String(http.StatusOK, accessToken)
-
-// 	response := handlers.SuccessResponse{
-// 		Status:  "status1",
-// 		Message: "message1",
-// 		Error:   "error1",
-// 	}
-
-// 	ctx.JSON(http.StatusInternalServerError, response.FormatResponse())
-
-// }
