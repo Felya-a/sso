@@ -4,6 +4,10 @@ on:
   push:
     branches: ["main"]
 
+concurrency:
+  group: "ci-workflow"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: self-hosted
