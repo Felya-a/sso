@@ -8,7 +8,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"sso/internal/models"
+	models "sso/internal/services/auth/model/errors"
 	repository "sso/internal/services/auth/repository"
 	fake "sso/internal/services/auth/tests/unit/fake"
 	usecase "sso/internal/services/auth/use-case"
@@ -16,10 +16,12 @@ import (
 
 var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 	var log *slog.Logger
+	var fakeUser UserWithPassword
 	var userRepository repository.UserRepository
 	var registrationUser usecase.RegistrationUserUseCase
 
 	BeforeEach(func() {
+		fakeUser = ValidUser
 		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 		userRepository = fake.NewFakeUserRepository()
 		registrationUser = usecase.RegistrationUserUseCase{Users: userRepository}
@@ -33,7 +35,6 @@ var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 
 	It("should save new user", func() {
 		// Arrange
-		fakeUser := ValidUser
 
 		// Action
 		user, err := registrationUser.Execute(context.Background(), log, fakeUser.Email, fakeUser.password)
@@ -46,7 +47,6 @@ var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 
 	It("should not save on failed to check exists user", func() {
 		// Arrange
-		fakeUser := ValidUser
 
 		// Action
 		user, err := registrationUser.Execute(context.Background(), log, "need_error@local.com", fakeUser.password)
@@ -60,7 +60,6 @@ var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 
 	It("should not save on user already exists", func() {
 		// Arrange
-		fakeUser := ValidUser
 		userRepository.Save(context.Background(), fakeUser.Email, fakeUser.PassHash)
 
 		// Action
@@ -75,7 +74,6 @@ var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 
 	It("should not save on failed to save user", func() {
 		// Arrange
-		fakeUser := ValidUser
 
 		// Action
 		user, err := registrationUser.Execute(context.Background(), log, "need_error_on_save@local.com", fakeUser.password)
@@ -89,7 +87,6 @@ var _ = Describe("RegistrationUserUseCase", Label("unit"), func() {
 
 	It("should not save on getted nullable id on save user", func() {
 		// Arrange
-		fakeUser := ValidUser
 
 		// Action
 		user, err := registrationUser.Execute(context.Background(), log, "need_null@local.com", fakeUser.password)

@@ -9,18 +9,20 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"sso/internal/models"
+	models "sso/internal/services/auth/model/errors"
 	repository "sso/internal/services/auth/repository"
-	fake "sso/internal/services/auth/tests/unit/fake"
+	"sso/internal/services/auth/tests/unit/fake"
 	usecase "sso/internal/services/auth/use-case"
 )
 
 var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 	var log *slog.Logger
+	var fakeUser UserWithPassword
 	var userRepository repository.UserRepository
 	var authenticateUser usecase.AuthenticateUserUseCase
 
 	BeforeEach(func() {
+		fakeUser = ValidUser
 		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 		userRepository = fake.NewFakeUserRepository()
 		authenticateUser = usecase.AuthenticateUserUseCase{Users: userRepository}
@@ -28,7 +30,6 @@ var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 
 	It("should return valid user", func() {
 		// Arrange - Подготовка
-		fakeUser := ValidUser
 		userRepository.Save(context.Background(), fakeUser.Email, fakeUser.PassHash)
 
 		// Action - Действие
@@ -42,7 +43,6 @@ var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 
 	It("should not auth on failed get user info", func() {
 		// Arrange - Подготовка
-		fakeUser := ValidUser
 		userRepository.Save(context.Background(), "need_error@local.com", fakeUser.PassHash)
 
 		// Action - Действие
@@ -57,7 +57,6 @@ var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 
 	It("should not auth on user not found", func() {
 		// Arrange - Подготовка
-		fakeUser := ValidUser
 
 		// Action - Действие
 		user, err := authenticateUser.Execute(context.Background(), log, fakeUser.Email, fakeUser.password)
@@ -71,7 +70,6 @@ var _ = Describe("AuthenticateUserUseCase", Label("unit"), func() {
 
 	It("should not auth on error on compare hash", func() {
 		// Arrange - Подготовка
-		fakeUser := ValidUser
 		userRepository.Save(context.Background(), fakeUser.Email, []byte(""))
 
 		// Action - Действие

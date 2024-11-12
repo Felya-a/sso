@@ -1,13 +1,14 @@
-package auth
+package auth_service
 
 import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
+
 	"sso/internal/lib/jwt"
 	"sso/internal/lib/logger/sl"
 	authModels "sso/internal/services/auth/model"
-	"time"
 )
 
 type GenerateTokenUseCase struct {

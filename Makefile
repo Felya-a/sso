@@ -54,4 +54,4 @@ test-watch:
 test-coverage:
 	go test -v -coverprofile=tmp/coverage.txt ./...; \
 	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html; \
-	echo "Файл "
+	echo "Сформирован файл покрытия - tmp/coverage.html"

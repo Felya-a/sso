@@ -16,6 +16,7 @@ type Config struct {
 	TokenTtl  time.Duration `env:"TOKEN_TTL" env-required:"true"`
 	JWTSecret string        `env:"JWT_SECRET" env-required:"true"`
 	Grpc      GrpcConfig
+	Http      HttpConfig
 	Postgres  PostgresConfig
 }
 
@@ -33,6 +34,12 @@ type GrpcConfig struct {
 	Host    string `env:"GRPC_HOST" env-required:"true" env-description:"gRPC server host for tests"`
 	Port    string `env:"GRPC_PORT" env-required:"true"`
 	Timeout string `env:"GRPC_TIMEOUT"`
+}
+
+// HttpConfig структура, содержащая настройки для http
+type HttpConfig struct {
+	Host string `env:"HTTP_HOST" env-required:"true" env-description:"http server host for tests"`
+	Port string `env:"HTTP_PORT" env-required:"true"`
 }
 
 var config Config

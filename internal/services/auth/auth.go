@@ -1,4 +1,4 @@
-package auth
+package auth_service
 
 import (
 	"context"
@@ -6,12 +6,13 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/jmoiron/sqlx"
-
 	"sso/internal/config"
 	"sso/internal/lib/logger/sl"
+	authModels "sso/internal/services/auth/model"
 	"sso/internal/services/auth/repository"
 	usecase "sso/internal/services/auth/use-case"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Auth interface {
@@ -26,12 +27,17 @@ type Auth interface {
 		email string,
 		password string,
 	) (userID int64, err error)
+	GetUserInfo(
+		ctx context.Context,
+		token string,
+	) (user *authModels.UserModel, err error)
 }
 
 type AuthService struct {
 	log              *slog.Logger
 	authenticateUser usecase.AuthenticateUserUseCase
 	generateToken    usecase.GenerateTokenUseCase
+	parseToken       usecase.ParseTokenUseCase
 	registrationUser usecase.RegistrationUserUseCase
 	mu               sync.Mutex
 }
@@ -44,11 +50,13 @@ func New(
 	registrationUser := usecase.RegistrationUserUseCase{Users: userRepository}
 	authenticateUser := usecase.AuthenticateUserUseCase{Users: userRepository}
 	generateToken := usecase.GenerateTokenUseCase{TokenTtl: config.Get().TokenTtl}
+	parseToken := usecase.ParseTokenUseCase{Users: userRepository}
 
 	return &AuthService{
 		log:              log,
 		authenticateUser: authenticateUser,
 		generateToken:    generateToken,
+		parseToken:       parseToken,
 		registrationUser: registrationUser,
 	}
 }
@@ -88,13 +96,12 @@ func (a *AuthService) RegisterNewUser(
 	const op = "authService.RegisterNewUser"
 	log := a.log.With(
 		slog.String("op", op),
-		slog.String("email", email),
 	)
 
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	log.Info("try registration user")
+	log.Info("registration new user", "email", email)
 
 	user, err := a.registrationUser.Execute(ctx, log, email, password)
 	if err != nil {
@@ -102,7 +109,29 @@ func (a *AuthService) RegisterNewUser(
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	log.Info("new user success registered")
+	log.Info("user success registered", "email", email)
 
 	return user.ID, nil
+}
+
+func (a *AuthService) GetUserInfo(
+	ctx context.Context,
+	token string,
+) (user *authModels.UserModel, err error) {
+	const op = "authService.GetUserInfo"
+	log := a.log.With(
+		slog.String("op", op),
+	)
+
+	log.Info("try parse jwt token", "token", token)
+
+	user, err = a.parseToken.Execute(ctx, log, token, config.Get().JWTSecret)
+	if err != nil {
+		log.Error("failed on parse jwt token", sl.Err(err))
+		return &authModels.UserModel{}, err
+	}
+
+	log.Info("jwt success parsed", "userId", user.ID)
+
+	return user, err
 }

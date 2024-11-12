@@ -59,6 +59,8 @@ jobs:
             -e GRPC_HOST=ifedoseev.ru
             -e GRPC_PORT=44045
             -e GRPC_TIMEOUT=10h
+            -e HTTP_HOST=ifedoseev.ru
+            -e HTTP_PORT=8080
             -e POSTGRES_USER=meet_space
             -e POSTGRES_DATABASE=sso
             -e POSTGRES_PASSWORD=nDm3b6D7eGwupcYaZsRe

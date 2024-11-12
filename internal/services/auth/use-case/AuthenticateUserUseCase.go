@@ -1,10 +1,11 @@
-package auth
+package auth_service
 
 import (
 	"context"
 	"log/slog"
 	"sso/internal/lib/logger/sl"
-	"sso/internal/models"
+	models "sso/internal/services/auth/model/errors"
+
 	auth "sso/internal/services/auth/model"
 	"sso/internal/services/auth/repository"
 

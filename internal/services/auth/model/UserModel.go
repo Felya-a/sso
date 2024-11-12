@@ -1,4 +1,4 @@
-package auth
+package auth_service
 
 type UserModel struct {
 	ID       int64  `db:"id"`

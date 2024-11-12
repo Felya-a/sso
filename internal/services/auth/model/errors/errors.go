@@ -8,4 +8,5 @@ var (
 	ErrUserAlreadyExists  = errors.New("user already exists")
 	ErrUserNotSaved       = errors.New("user not saved")
 	ErrInternal           = errors.New("internal error")
+	ErrInvalidJwt         = errors.New("jwt is invalid")
 )

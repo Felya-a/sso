@@ -1,4 +1,4 @@
-package auth
+package fake
 
 import (
 	"context"
@@ -7,7 +7,8 @@ import (
 )
 
 type FakeUserRepository struct {
-	users []user
+	users   []user
+	counter int64
 }
 
 type user struct {
@@ -20,21 +21,18 @@ func NewFakeUserRepository() *FakeUserRepository {
 	return &FakeUserRepository{}
 }
 
-var counter int64
-
 func (r *FakeUserRepository) Save(
 	ctx context.Context,
 	email string,
 	passHash []byte,
 ) (err error) {
-
 	// For test only
 	if email == "need_error_on_save@local.com" {
 		return errors.New("error for test")
 	}
 
-	counter++
-	r.users = append(r.users, user{ID: counter, Email: email, Password: passHash})
+	r.counter++
+	r.users = append(r.users, user{ID: r.counter, Email: email, Password: passHash})
 	return nil
 }
 

@@ -4,14 +4,15 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"syscall"
+
 	"sso/internal/app"
 	"sso/internal/config"
 	"sso/internal/lib/logger/handlers/slogpretty"
+	authService "sso/internal/services/auth"
 	"sso/internal/utils"
-	"syscall"
 
 	_ "database/sql"
-
 	_ "github.com/lib/pq"
 )
 
@@ -30,9 +31,12 @@ func main() {
 	db := utils.MustConnectPostgres(config)
 	utils.Migrate(db)
 
-	application := app.New(db, log, config.Grpc.Port)
+	authService := authService.New(db, log)
+
+	application := app.New(db, log, config.Grpc.Port, config.Http.Port, authService)
 
 	go application.GrpcServer.MustRun()
+	go application.HttpServer.MustRun()
 
 	log.Info("Starting application", slog.Any("env", config.Env))
 
@@ -41,6 +45,7 @@ func main() {
 	log.Info("Stopping application", slog.String("signal", sgnl.String()))
 
 	application.GrpcServer.Stop()
+	application.HttpServer.Stop()
 	db.Close()
 
 	log.Info("Application stopped")

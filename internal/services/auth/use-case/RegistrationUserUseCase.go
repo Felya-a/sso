@@ -1,11 +1,11 @@
-package auth
+package auth_service
 
 import (
 	"context"
 	"log/slog"
 	"sso/internal/lib/logger/sl"
-	"sso/internal/models"
 	auth "sso/internal/services/auth/model"
+	models "sso/internal/services/auth/model/errors"
 	"sso/internal/services/auth/repository"
 
 	"golang.org/x/crypto/bcrypt"

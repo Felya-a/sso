@@ -58,11 +58,11 @@ func New(
 	db *sqlx.DB,
 	log *slog.Logger,
 	port string,
+	authService authService.Auth,
 ) *App {
 	// gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(LoggerInterceptor))
 	// gRPCServer := grpc.NewServer(grpc.UnaryInterceptor(LoggerInterceptorWithLog(log)))
 	gRPCServer := grpc.NewServer()
-	authService := authService.New(db, log)
 	authgrpc.Register(log, gRPCServer, authService)
 
 	return &App{
