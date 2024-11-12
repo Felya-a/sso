@@ -21,7 +21,7 @@ func GetUserInfoHandler(authService authService.Auth) gin.HandlerFunc {
 				Message: "failed get user info",
 				Error:   "authorization header is missing",
 			}
-			ctx.JSON(401, response.FormatResponse())
+			ctx.JSON(401, response)
 			return
 		}
 
@@ -38,20 +38,20 @@ func GetUserInfoHandler(authService authService.Auth) gin.HandlerFunc {
 			if errors.Is(err, models.ErrUserNotFound) ||
 				errors.Is(err, models.ErrInvalidJwt) {
 				response.Error = err.Error()
-				ctx.JSON(400, response.FormatResponse())
+				ctx.JSON(400, response)
 				return
 			}
 
-			ctx.JSON(http.StatusInternalServerError, response.FormatResponse())
+			ctx.JSON(http.StatusInternalServerError, response)
 			return
 		}
 
 		response := SuccessResponse{
 			Status:  "ok",
 			Message: "success parse jwt token",
-			Data:    NewUserInfoDto(userInfo),
+			Data:    GetUserInfoResponseDto(userInfo),
 		}
 
-		ctx.JSON(http.StatusOK, response.FormatResponse())
+		ctx.JSON(http.StatusOK, response)
 	}
 }

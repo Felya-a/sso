@@ -9,6 +9,7 @@ import (
 
 func SetupUserRoutes(r *gin.RouterGroup, authService authService.Auth) {
 	r.GET("/userinfo", handlers.GetUserInfoHandler(authService))
+	r.POST("/login", handlers.GetLoginHandler(authService))
 
 	/* FOR DEBUG ONLY */
 	r.GET("/ping", func(c *gin.Context) {

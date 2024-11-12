@@ -12,17 +12,9 @@ type SuccessResponse struct {
 	Data    interface{} `json:"data"`
 }
 
-func (sr SuccessResponse) FormatResponse() interface{} {
-	return sr
-}
-
 // Структура для ошибки
 type ErrorResponse struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 	Error   string `json:"error"`
-}
-
-func (er ErrorResponse) FormatResponse() interface{} {
-	return er
 }

@@ -27,9 +27,8 @@ func (uc *AuthenticateUserUseCase) Execute(
 		log.Error("failed to get user info from repository", sl.Err(err))
 		return &auth.UserModel{}, models.ErrInternal
 	}
-
 	if user.ID == 0 {
-		log.Warn("user not found")
+		log.Info("user not found")
 		return &auth.UserModel{}, models.ErrInvalidCredentials
 	}
 
