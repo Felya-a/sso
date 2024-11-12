@@ -20,6 +20,7 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 				Error:   err.Error(),
 			}
 			ctx.JSON(400, response)
+			return
 		}
 
 		if err := validator.New().Struct(dto); err != nil {
@@ -29,6 +30,7 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 				Error:   err.Error(),
 			}
 			ctx.JSON(400, response)
+			return
 		}
 
 		token, err := authService.Login(ctx, dto.Email, dto.Password, 1)
@@ -45,6 +47,7 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 				return
 			}
 			ctx.JSON(500, response)
+			return
 		}
 
 		response := SuccessResponse{
