@@ -2,18 +2,29 @@ package handlers
 
 import (
 	"errors"
+	"log/slog"
+	"sso/internal/lib/logger"
 	authService "sso/internal/services/auth"
 	models "sso/internal/services/auth/model/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
+	"github.com/google/uuid"
 )
 
-func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
+func GetLoginHandler(
+	authService authService.Auth,
+) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var dto LoginRequestDto
 
+		log := logger.Logger()
+		log = log.With(
+			slog.String("requestid", uuid.New().String()),
+		)
+
 		if err := ctx.ShouldBindBodyWithJSON(&dto); err != nil {
+			log.Info("parse body error", slog.String("error", err.Error()))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "parse body error",
@@ -24,6 +35,7 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 		}
 
 		if err := validator.New().Struct(dto); err != nil {
+			log.Info("validation error", slog.String("error", err.Error()))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "validation error",
@@ -33,8 +45,9 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 			return
 		}
 
-		token, err := authService.Login(ctx, dto.Email, dto.Password, 1)
+		token, err := authService.Login(ctx, log, dto.Email, dto.Password, 1)
 		if err != nil {
+			log.Info("error on login", slog.String("error", err.Error()))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "error on login",
@@ -50,6 +63,7 @@ func GetLoginHandler(authService authService.Auth) gin.HandlerFunc {
 			return
 		}
 
+		log.Info("success login", slog.String("email", dto.Email))
 		response := SuccessResponse{
 			Status:  "ok",
 			Message: "success login",

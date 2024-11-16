@@ -34,6 +34,7 @@ func (r PostgresUserRepository) Save(
 	`, email, passHash)
 
 	if err != nil {
+		// TODO: refactor log
 		fmt.Println(err.Error())
 		return err
 	}

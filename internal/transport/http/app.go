@@ -73,7 +73,6 @@ func (a *App) Stop() {
 	defer cancel()
 
 	if err := a.httpServer.Shutdown(ctx); err != nil {
-		fmt.Println(4)
 		a.log.Error("Server forced to shutdown: ", sl.Err(err))
 	}
 }

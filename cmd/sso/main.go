@@ -8,30 +8,24 @@ import (
 
 	"sso/internal/app"
 	"sso/internal/config"
-	"sso/internal/lib/logger/handlers/slogpretty"
+	"sso/internal/lib/logger"
 	authService "sso/internal/services/auth"
 	"sso/internal/utils"
 
 	_ "database/sql"
-	_ "github.com/lib/pq"
-)
 
-const (
-	envTest  = "test"
-	envLocal = "local"
-	envStage = "stage"
-	envProd  = "prod"
+	_ "github.com/lib/pq"
 )
 
 func main() {
 	config := config.MustLoad()
-
-	log := setupLogger(config.Env)
+	logger.SetEnv(config.Env)
+	log := logger.Logger()
 
 	db := utils.MustConnectPostgres(config)
 	utils.Migrate(db)
 
-	authService := authService.New(db, log)
+	authService := authService.New(db)
 
 	application := app.New(db, log, config.Grpc.Port, config.Http.Port, authService)
 
@@ -49,34 +43,6 @@ func main() {
 	db.Close()
 
 	log.Info("Application stopped")
-}
-
-func setupLogger(env string) *slog.Logger {
-	var log *slog.Logger
-
-	switch env {
-	case envLocal, envTest:
-		log = setupPrettySlog()
-		// log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envStage:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
-	case envProd:
-		log = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
-	}
-
-	return log
-}
-
-func setupPrettySlog() *slog.Logger {
-	opts := slogpretty.PrettyHandlerOptions{
-		SlogOpts: &slog.HandlerOptions{
-			Level: slog.LevelDebug,
-		},
-	}
-
-	handler := opts.NewPrettyHandler(os.Stdout)
-
-	return slog.New(handler)
 }
 
 func gracefulShutdown() os.Signal {

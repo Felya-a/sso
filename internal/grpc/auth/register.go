@@ -3,9 +3,14 @@ package auth
 import (
 	"context"
 	"errors"
+	"log/slog"
+
+	"sso/internal/lib/logger"
+	models "sso/internal/services/auth/model/errors"
 
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
-	models "sso/internal/services/auth/model/errors"
+	"github.com/go-playground/validator"
+	"github.com/google/uuid"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,16 +25,21 @@ func (s *serverApi) Register(
 	ctx context.Context,
 	req *ssov1.RegisterRequest,
 ) (*ssov1.RegisterResponse, error) {
+	log := logger.Logger()
+	log = log.With(
+		slog.String("requestid", uuid.New().String()),
+	)
+
 	dto := RegisterRequestValidate{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
 	}
 
-	if err := s.validator.Struct(dto); err != nil {
+	if err := validator.New().Struct(dto); err != nil {
 		return nil, status.Error(codes.InvalidArgument, models.ErrInvalidCredentials.Error())
 	}
 
-	userId, err := s.auth.RegisterNewUser(ctx, dto.Email, dto.Password)
+	userId, err := s.auth.RegisterNewUser(ctx, log, dto.Email, dto.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrUserAlreadyExists) {
 			return nil, status.Error(codes.Internal, models.ErrUserAlreadyExists.Error())

@@ -18,23 +18,25 @@ import (
 type Auth interface {
 	Login(
 		ctx context.Context,
+		log *slog.Logger,
 		email string,
 		password string,
 		appID int,
 	) (token string, err error)
 	RegisterNewUser(
 		ctx context.Context,
+		log *slog.Logger,
 		email string,
 		password string,
 	) (userID int64, err error)
 	GetUserInfo(
 		ctx context.Context,
+		log *slog.Logger,
 		token string,
 	) (user *authModels.UserModel, err error)
 }
 
 type AuthService struct {
-	log              *slog.Logger
 	authenticateUser usecase.AuthenticateUserUseCase
 	generateToken    usecase.GenerateTokenUseCase
 	parseToken       usecase.ParseTokenUseCase
@@ -44,7 +46,6 @@ type AuthService struct {
 
 func New(
 	db *sqlx.DB,
-	log *slog.Logger,
 ) *AuthService {
 	userRepository := repository.NewPostgresUserRepository(db)
 	registrationUser := usecase.RegistrationUserUseCase{Users: userRepository}
@@ -53,7 +54,6 @@ func New(
 	parseToken := usecase.ParseTokenUseCase{Users: userRepository}
 
 	return &AuthService{
-		log:              log,
 		authenticateUser: authenticateUser,
 		generateToken:    generateToken,
 		parseToken:       parseToken,
@@ -63,12 +63,13 @@ func New(
 
 func (a *AuthService) Login(
 	ctx context.Context,
+	log *slog.Logger,
 	email string,
 	password string,
 	appID int,
 ) (token string, err error) {
 	const op = "authService.Login"
-	log := a.log.With(
+	log = log.With(
 		slog.String("op", op),
 		slog.String("email", email),
 	)
@@ -90,11 +91,12 @@ func (a *AuthService) Login(
 
 func (a *AuthService) RegisterNewUser(
 	ctx context.Context,
+	log *slog.Logger,
 	email string,
 	password string,
 ) (userID int64, err error) {
 	const op = "authService.RegisterNewUser"
-	log := a.log.With(
+	log = log.With(
 		slog.String("op", op),
 	)
 
@@ -116,10 +118,11 @@ func (a *AuthService) RegisterNewUser(
 
 func (a *AuthService) GetUserInfo(
 	ctx context.Context,
+	log *slog.Logger,
 	token string,
 ) (user *authModels.UserModel, err error) {
 	const op = "authService.GetUserInfo"
-	log := a.log.With(
+	log = log.With(
 		slog.String("op", op),
 	)
 

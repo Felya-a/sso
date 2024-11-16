@@ -7,7 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupUserRoutes(r *gin.RouterGroup, authService authService.Auth) {
+func SetupUserRoutes(
+	r *gin.RouterGroup,
+	authService authService.Auth,
+) {
 	r.GET("/userinfo", handlers.GetUserInfoHandler(authService))
 	r.POST("/login", handlers.GetLoginHandler(authService))
 

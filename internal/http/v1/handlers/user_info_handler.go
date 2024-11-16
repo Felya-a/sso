@@ -2,17 +2,27 @@ package handlers
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
+	"sso/internal/lib/logger"
 	authService "sso/internal/services/auth"
 	models "sso/internal/services/auth/model/errors"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
-func GetUserInfoHandler(authService authService.Auth) gin.HandlerFunc {
+func GetUserInfoHandler(
+	authService authService.Auth,
+) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
+		log := logger.Logger()
+		log = log.With(
+			slog.String("requestid", uuid.New().String()),
+		)
+
 		authorizationHeader := ctx.Request.Header.Get("Authorization")
 
 		if authorizationHeader == "" {
@@ -27,7 +37,7 @@ func GetUserInfoHandler(authService authService.Auth) gin.HandlerFunc {
 
 		accessToken := strings.TrimPrefix(authorizationHeader, "Bearer ")
 
-		userInfo, err := authService.GetUserInfo(ctx, accessToken)
+		userInfo, err := authService.GetUserInfo(ctx, log, accessToken)
 		if err != nil {
 			response := ErrorResponse{
 				Status:  "error",
