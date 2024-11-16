@@ -17,7 +17,8 @@ func SetEnv(environment string) {
 func Logger() *slog.Logger {
 	switch env {
 	case "local", "test":
-		return setupPrettySlog()
+		// return setupPrettySlog()
+		return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	case "stage":
 		return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	case "prod":

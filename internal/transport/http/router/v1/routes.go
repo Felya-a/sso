@@ -1,13 +1,13 @@
 package http_routes_v1
 
 import (
-	"sso/internal/http/v1/handlers"
+	handlers "sso/internal/http/handlers/v1"
 	authService "sso/internal/services/auth"
 
 	"github.com/gin-gonic/gin"
 )
 
-func SetupUserRoutes(
+func SetupV1Routes(
 	r *gin.RouterGroup,
 	authService authService.Auth,
 ) {

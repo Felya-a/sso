@@ -1,9 +1,4 @@
-package handlers
-
-// Интерфейс для обязательного формата ответа
-type ResponseFormatter interface {
-	FormatResponse() interface{}
-}
+package http_handlers
 
 // Структура для успешного ответа
 type SuccessResponse struct {

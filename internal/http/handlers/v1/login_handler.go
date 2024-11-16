@@ -1,8 +1,9 @@
-package handlers
+package http_handlers_v1
 
 import (
 	"errors"
 	"log/slog"
+	. "sso/internal/http/handlers"
 	"sso/internal/lib/logger"
 	authService "sso/internal/services/auth"
 	models "sso/internal/services/auth/model/errors"

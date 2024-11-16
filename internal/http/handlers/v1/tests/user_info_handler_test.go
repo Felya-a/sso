@@ -1,4 +1,4 @@
-package auth_test_integration
+package http_handlers_v1_test
 
 import (
 	"bytes"
@@ -13,7 +13,8 @@ import (
 	_ "database/sql"
 
 	"sso/internal/config"
-	. "sso/internal/http/v1/handlers"
+	. "sso/internal/http/handlers"
+	. "sso/internal/http/handlers/v1"
 	authRepository "sso/internal/services/auth/repository"
 	testCommon "sso/internal/services/auth/tests/common"
 	utils "sso/internal/utils"

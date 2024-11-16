@@ -1,4 +1,4 @@
-package handlers
+package http_handlers_v1
 
 import (
 	authModels "sso/internal/services/auth/model"
@@ -27,4 +27,17 @@ type LoginResponseDto struct {
 
 func GetLoginResponseDto(token string) LoginResponseDto {
 	return LoginResponseDto{Token: token}
+}
+
+type RegistrationRequestDto struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6,max=20"`
+}
+
+type RegistrationResponseDto struct {
+	Token string `json:"token"`
+}
+
+func GetRegistrationResponseDto(token string) RegistrationResponseDto {
+	return RegistrationResponseDto{Token: token}
 }
