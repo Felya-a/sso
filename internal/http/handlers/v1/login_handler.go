@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	. "sso/internal/http/handlers"
 	"sso/internal/lib/logger"
+	"sso/internal/lib/logger/sl"
 	authService "sso/internal/services/auth"
 	models "sso/internal/services/auth/model/errors"
 
@@ -25,7 +26,7 @@ func GetLoginHandler(
 		)
 
 		if err := ctx.ShouldBindBodyWithJSON(&dto); err != nil {
-			log.Info("parse body error", slog.String("error", err.Error()))
+			log.Info("parse body error", sl.Err(err))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "parse body error",
@@ -36,7 +37,7 @@ func GetLoginHandler(
 		}
 
 		if err := validator.New().Struct(dto); err != nil {
-			log.Info("validation error", slog.String("error", err.Error()))
+			log.Info("validation error", sl.Err(err))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "validation error",
@@ -48,7 +49,7 @@ func GetLoginHandler(
 
 		token, err := authService.Login(ctx, log, dto.Email, dto.Password, 1)
 		if err != nil {
-			log.Info("error on login", slog.String("error", err.Error()))
+			log.Info("error on login", sl.Err(err))
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "error on login",
