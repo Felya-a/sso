@@ -58,10 +58,11 @@ var _ = Describe("AuthIntegrationTestHTTP", Label("integration"), Ordered, func(
 			users.Save(context.Background(), fakeUser.Email, fakeUser.PassHash)
 
 			// Формирование HTTP-запроса
-			requestBody, err := json.Marshal(map[string]interface{}{
-				"email":    fakeUser.Email,
-				"password": fakeUser.Password,
+			requestBody, err := json.Marshal(LoginRequestDto{
+				Email:    fakeUser.Email,
+				Password: fakeUser.Password,
 			})
+			fmt.Printf("Request Body: %s\n", string(requestBody))
 			Expect(err).NotTo(HaveOccurred())
 
 			req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%s/login", baseURL), bytes.NewReader(requestBody))
