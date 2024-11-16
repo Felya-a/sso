@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"sso/internal/config"
 	"sso/internal/lib/logger/sl"
 	authService "sso/internal/services/auth"
 	"sso/internal/transport/http/router"
@@ -27,6 +28,7 @@ func New(
 	port string,
 	authService authService.Auth,
 ) *App {
+	setGinMode()
 	app := gin.Default()
 
 	router.SetupRoutes(app, authService)
@@ -64,6 +66,21 @@ func (a *App) run() error {
 	}
 
 	return nil
+}
+
+func setGinMode() {
+	var mode string
+
+	switch config.Get().Env {
+	case "local", "test":
+		mode = "debug"
+	case "stage", "prod":
+		mode = "release"
+	default:
+		mode = "release"
+	}
+
+	gin.SetMode(mode)
 }
 
 func (a *App) Stop() {
