@@ -43,6 +43,9 @@ func ParseToken(tokenString string, secret string) (JwtBodyParams, error) {
 	// Парсим токен
 	token, err := jwt.Parse(tokenString, keyFunc)
 	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return JwtBodyParams{}, jwt.ErrTokenExpired
+		}
 		return JwtBodyParams{}, err
 	}
 

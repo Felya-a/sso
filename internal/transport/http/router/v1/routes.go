@@ -13,6 +13,7 @@ func SetupV1Routes(
 ) {
 	r.GET("/userinfo", handlers.GetUserInfoHandler(authService))
 	r.POST("/login", handlers.GetLoginHandler(authService))
+	r.POST("/registration", handlers.GetRegistrationHandler(authService))
 
 	/* FOR DEBUG ONLY */
 	r.GET("/ping", func(c *gin.Context) {

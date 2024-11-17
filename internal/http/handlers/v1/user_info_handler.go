@@ -3,7 +3,6 @@ package http_handlers_v1
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"strings"
 
 	. "sso/internal/http/handlers"
@@ -12,6 +11,7 @@ import (
 	models "sso/internal/services/auth/model/errors"
 
 	"github.com/gin-gonic/gin"
+	jwtLib "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -29,7 +29,7 @@ func GetUserInfoHandler(
 		if authorizationHeader == "" {
 			response := ErrorResponse{
 				Status:  "error",
-				Message: "failed get user info",
+				Message: "failed",
 				Error:   "authorization header is missing",
 			}
 			ctx.JSON(401, response)
@@ -42,27 +42,28 @@ func GetUserInfoHandler(
 		if err != nil {
 			response := ErrorResponse{
 				Status:  "error",
-				Message: "failed parse jwt token",
+				Message: "failed",
 				Error:   models.ErrInternal.Error(),
 			}
 
 			if errors.Is(err, models.ErrUserNotFound) ||
-				errors.Is(err, models.ErrInvalidJwt) {
+				errors.Is(err, models.ErrInvalidJwt) ||
+				errors.Is(err, jwtLib.ErrTokenExpired) {
 				response.Error = err.Error()
 				ctx.JSON(400, response)
 				return
 			}
 
-			ctx.JSON(http.StatusInternalServerError, response)
+			ctx.JSON(500, response)
 			return
 		}
 
 		response := SuccessResponse{
 			Status:  "ok",
-			Message: "success parse jwt token",
+			Message: "success",
 			Data:    GetUserInfoResponseDto(userInfo),
 		}
 
-		ctx.JSON(http.StatusOK, response)
+		ctx.JSON(200, response)
 	}
 }

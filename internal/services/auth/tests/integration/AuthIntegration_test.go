@@ -57,7 +57,6 @@ var _ = Describe("AuthIntegrationTest", Label("integration"), Ordered, func() {
 
 	Context("Registration", func() {
 		It("should save valid user", func() {
-
 			fakeUser := testCommon.ValidUser
 
 			// Отправка gRPC запроса

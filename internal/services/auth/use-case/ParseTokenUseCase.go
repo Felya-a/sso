@@ -2,7 +2,9 @@ package auth_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	jwtLib "github.com/golang-jwt/jwt/v5"
 	"log/slog"
 	"sso/internal/lib/jwt"
 	"sso/internal/lib/logger/sl"
@@ -31,6 +33,10 @@ func (uc *ParseTokenUseCase) Execute(
 
 	jwtInfo, err := jwt.ParseToken(token, JWTSecret)
 	if err != nil {
+		if errors.Is(err, jwtLib.ErrTokenExpired) {
+			log.Error("jwt token expired", sl.Err(err))
+			return &authModels.UserModel{}, jwtLib.ErrTokenExpired
+		}
 		log.Error("failed on parse jwt token", sl.Err(err))
 		return &authModels.UserModel{}, models.ErrInvalidJwt
 	}

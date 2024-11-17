@@ -35,9 +35,9 @@ type RegistrationRequestDto struct {
 }
 
 type RegistrationResponseDto struct {
-	Token string `json:"token"`
+	UserId int64 `json:"userid"`
 }
 
-func GetRegistrationResponseDto(token string) RegistrationResponseDto {
-	return RegistrationResponseDto{Token: token}
+func GetRegistrationResponseDto(userid int64) RegistrationResponseDto {
+	return RegistrationResponseDto{UserId: userid}
 }
