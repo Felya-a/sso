@@ -43,7 +43,7 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build -t github_runner/sso-server:test -f Dockerfile.test .
+          docker build -t github_runner/sso-server:test -f ./server/Dockerfile.test ./server
       
       - name: Run Unit tests
         run: |
