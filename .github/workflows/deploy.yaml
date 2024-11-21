@@ -21,13 +21,16 @@ jobs:
         run: |
           echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login --password-stdin -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" "${{ secrets.DOCKER_REGISTRY_HOST }}"
 
-      - name: Build Docker image
+      - name: Build Docker images
         run: |
-          docker build -t github_runner/sso:test .
-          docker tag github_runner/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test
+          docker build -t github_runner/sso-server:test ./server
+          docker build -t github_runner/sso-client:stage --build-arg REACT_APP_API_URL=http://ifedoseev.ru:8080/api/v1 ./client
+          docker tag github_runner/sso-server:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
+          docker tag github_runner/sso-client:stage ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
       - name: Push Test Docker image
-        run: docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test
+        run: |
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
 
   test:
     runs-on: self-hosted
@@ -40,11 +43,11 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build -t github_runner/sso:test -f Dockerfile.test .
+          docker build -t github_runner/sso-server:test -f Dockerfile.test .
       
       - name: Run Unit tests
         run: |
-          docker run --rm github_runner/sso:test make test-unit
+          docker run --rm github_runner/sso-server:test make test-unit
 
       - name: Start Integration stand
         env:
@@ -70,12 +73,16 @@ jobs:
             -e POSTGRES_PASSWORD=nDm3b6D7eGwupcYaZsRe
             -e POSTGRES_HOST=ifedoseev.ru
             -e POSTGRES_PORT=5532
-            github_runner/sso:test make test-integration
+            github_runner/sso-server:test make test-integration
 
       - name: Stop Integration stand
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd chat_app/test && docker compose down"
           rm deploy_key.pem
+
+      - name: Delete Template Docker image (Dockerfile.test)
+        run: |
+          docker rmi -f github_runner/sso-server:test
 
   push-image:
     runs-on: self-hosted
@@ -85,12 +92,18 @@ jobs:
     steps:
       - name: Push Stage Docker image
         run: |
-          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
-          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
+          docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage
+          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
       - name: Delete Docker images
         run: |
-          docker rmi -f github_runner/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso:stage
+          docker rmi -f
+            github_runner/sso-server:test
+            github_runner/sso-client:stage
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
   deploy-stage:
     runs-on: self-hosted
