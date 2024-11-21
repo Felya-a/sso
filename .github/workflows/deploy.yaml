@@ -68,7 +68,7 @@ jobs:
             -e GRPC_TIMEOUT=10h
             -e HTTP_HOST=ifedoseev.ru
             -e HTTP_PORT=8081
-            -e POSTGRES_USER=meet_space
+            -e POSTGRES_USER=chat_app
             -e POSTGRES_DATABASE=sso
             -e POSTGRES_PASSWORD=nDm3b6D7eGwupcYaZsRe
             -e POSTGRES_HOST=ifedoseev.ru
