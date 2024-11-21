@@ -1,5 +1,5 @@
 /tmp/
 /.vscode/
-/bin/
-/config/
-!/config/example.env
+server/bin/
+server/config/
+!server/config/example.env
