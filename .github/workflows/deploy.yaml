@@ -98,11 +98,11 @@ jobs:
 
       - name: Delete Docker images
         run: |
-          docker rmi -f
-            github_runner/sso-server:test
-            github_runner/sso-client:stage
-            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
-            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage
+          docker rmi -f \
+            github_runner/sso-server:test \
+            github_runner/sso-client:stage \
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test \
+            ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage \
             ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
   deploy-stage:
