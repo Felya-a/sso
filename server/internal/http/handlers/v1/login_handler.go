@@ -8,7 +8,6 @@ import (
 	"sso/internal/lib/logger/sl"
 	authService "sso/internal/services/auth"
 	models "sso/internal/services/auth/model/errors"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
@@ -25,8 +24,6 @@ func GetLoginHandler(
 		log = log.With(
 			slog.String("requestid", uuid.New().String()),
 		)
-
-		time.Sleep(3 * time.Second)
 
 		if err := ctx.ShouldBindBodyWithJSON(&dto); err != nil {
 			log.Info("parse body error", sl.Err(err))

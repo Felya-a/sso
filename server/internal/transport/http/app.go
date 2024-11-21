@@ -60,10 +60,6 @@ func (a *App) run() error {
 		slog.String("port", a.port),
 	)
 
-	go func() {
-        http.ListenAndServe("localhost:6060", nil) // pprof доступен на порту 6060
-    }()
-
 	log.Info("http server is running", slog.String("addr", a.httpServer.Addr))
 	if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Error("error on start http server", sl.Err(err))

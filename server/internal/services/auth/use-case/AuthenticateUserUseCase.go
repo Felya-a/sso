@@ -2,11 +2,9 @@ package auth_service
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sso/internal/lib/logger/sl"
 	models "sso/internal/services/auth/model/errors"
-	"time"
 
 	auth "sso/internal/services/auth/model"
 	"sso/internal/services/auth/repository"
@@ -34,13 +32,10 @@ func (uc *AuthenticateUserUseCase) Execute(
 		return &auth.UserModel{}, models.ErrInvalidCredentials
 	}
 
-	start := time.Now()
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
 		log.Info("failed on compare hash from password", sl.Err(err))
 		return &auth.UserModel{}, models.ErrInvalidCredentials
 	}
-	elapsed := time.Since(start)
-	fmt.Printf("Request took %s", elapsed)
 
 	return user, nil
 }
