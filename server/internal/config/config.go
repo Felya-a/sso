@@ -12,12 +12,18 @@ import (
 
 // Config структура, содержащая всю конфигурацию
 type Config struct {
-	Env       string        `env:"ENV" env-required:"true"`
-	TokenTtl  time.Duration `env:"TOKEN_TTL" env-required:"true"`
-	JWTSecret string        `env:"JWT_SECRET" env-required:"true"`
-	Grpc      GrpcConfig
-	Http      HttpConfig
-	Postgres  PostgresConfig
+	Env      string `env:"ENV" env-required:"true"`
+	Jwt      JwtConfig
+	Grpc     GrpcConfig
+	Http     HttpConfig
+	Postgres PostgresConfig
+	Redis    RedisConfig
+}
+
+type JwtConfig struct {
+	Secret     string        `env:"JWT_SECRET" env-required:"true"`
+	AccessTtl  time.Duration `env:"JWT_ACCESS_TTL" env-required:"true"`
+	RefreshTtl time.Duration `env:"JWT_REFRESH_TTL" env-required:"true"`
 }
 
 // PostgresConfig структура, содержащая настройки для подключения к Postgresql
@@ -27,6 +33,11 @@ type PostgresConfig struct {
 	Password string `env:"POSTGRES_PASSWORD" env-required:"true"`
 	Host     string `env:"POSTGRES_HOST" env-required:"true"`
 	Port     int    `env:"POSTGRES_PORT" env-required:"true"`
+}
+
+// RedisConfig структура, содержащая настройки для подключения к Redis
+type RedisConfig struct {
+	Address string `env:"REDIS_ADDRESS" env-required:"true"`
 }
 
 // GrpcConfig структура, содержащая настройки для gRPC
@@ -55,9 +66,8 @@ func MustLoad() Config {
 	err := cleanenv.ReadEnv(&config)
 	if err == nil {
 		return config
-	} else {
-		fmt.Println("error on read raw env: " + err.Error())
 	}
+	fmt.Println("error on read raw env: " + err.Error())
 
 	// Чтение переменных из конфигурационного файла
 	configPath := fetchConfigPath()

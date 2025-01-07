@@ -12,6 +12,7 @@ import (
 	_ "database/sql"
 
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose/v3"
@@ -28,6 +29,14 @@ func MustConnectPostgres(config config.Config) *sqlx.DB {
 	}
 
 	return db
+}
+
+func MustConnectRedis(config config.Config) *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		// Addr: "localhost:6379", // Укажите адрес вашего Redis
+		Addr: config.Redis.Address,
+	})
+	return rdb
 }
 
 func Migrate(db *sqlx.DB) {

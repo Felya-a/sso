@@ -1,9 +1,8 @@
 package http_handlers_v1
 
 import (
+	"fmt"
 	"log/slog"
-	"strings"
-
 	. "sso/internal/http/handlers"
 	"sso/internal/lib/logger"
 	authService "sso/internal/services/auth"
@@ -13,63 +12,55 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetUserInfoHandler(
+func GetRefreshHandler(
 	authService authService.Auth,
 ) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var accessToken string
-
 		log := logger.Logger()
 		log = log.With(
 			slog.String("requestid", uuid.New().String()),
 		)
 
-		accessTokenFromCookie, _ := ctx.Cookie("access_token")
-
-		authorizationHeader := ctx.Request.Header.Get("Authorization")
-		accessTokenFromHeaders := strings.TrimPrefix(authorizationHeader, "Bearer ")
-
-		if accessTokenFromHeaders != "" {
-			accessToken = accessTokenFromHeaders
-		}
-		if accessTokenFromCookie != "" {
-			accessToken = accessTokenFromCookie
-		}
-
-		if accessToken == "" {
+		refreshToken, _ := ctx.Cookie("refresh_token")
+		if refreshToken == "" {
 			response := ErrorResponse{
 				Status:  "error",
 				Message: "failed",
-				Error:   "access token is missing",
+				Error:   "refresh token is empty",
 			}
-			ctx.JSON(401, response)
+			ctx.JSON(400, response)
 			return
 		}
 
-		userInfo, err := authService.UserInfo(ctx, log, accessToken)
+		tokens, err := authService.Refresh(ctx, log, refreshToken)
 		if err != nil {
 			response := ErrorResponse{
 				Status:  "error",
-				Message: "failed",
+				Message: "error on registration",
 				Error:   "internal error",
 			}
-
 			if models.IsDefinedError(err) {
+				fmt.Println(err)
 				response.Error = err.Error()
 				ctx.JSON(400, response)
 				return
 			}
-
 			ctx.JSON(500, response)
 			return
 		}
 
+		// TODO: согласовать maxAge с временем жизни токенов
+		ctx.SetCookie("access_token", tokens.AccessJwtToken, 30*24*60*60, "/", "", true, true)
+		ctx.SetCookie("refresh_token", tokens.RefreshJwtToken, 30*24*60*60, "/", "", true, true)
+
 		response := SuccessResponse{
 			Status:  "ok",
 			Message: "success",
-			Data:    UserInfoResponseDto{ID: userInfo.ID, Email: userInfo.Email},
+			Data: TokenResponseDto{
+				AccessToken:  tokens.AccessJwtToken,
+				RefreshToken: tokens.RefreshJwtToken,
+			},
 		}
-
 		ctx.JSON(200, response)
 	}
 }

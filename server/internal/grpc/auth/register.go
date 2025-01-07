@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"sso/internal/lib/logger"
-	models "sso/internal/services/auth/model/errors"
+	models "sso/internal/services/auth/model"
 
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
 	"github.com/go-playground/validator"
@@ -39,7 +39,7 @@ func (s *serverApi) Register(
 		return nil, status.Error(codes.InvalidArgument, models.ErrInvalidCredentials.Error())
 	}
 
-	userId, err := s.auth.RegisterNewUser(ctx, log, dto.Email, dto.Password)
+	user, err := s.auth.Register(ctx, log, dto.Email, dto.Password)
 	if err != nil {
 		if errors.Is(err, models.ErrUserAlreadyExists) {
 			return nil, status.Error(codes.Internal, models.ErrUserAlreadyExists.Error())
@@ -47,5 +47,5 @@ func (s *serverApi) Register(
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &ssov1.RegisterResponse{UserId: int64(userId)}, nil
+	return &ssov1.RegisterResponse{UserId: user.ID}, nil
 }

@@ -1,13 +1,12 @@
 package http_handlers_v1
 
 import (
-	"errors"
 	"log/slog"
 	. "sso/internal/http/handlers"
 	"sso/internal/lib/logger"
 	"sso/internal/lib/logger/sl"
 	authService "sso/internal/services/auth"
-	models "sso/internal/services/auth/model/errors"
+	models "sso/internal/services/auth/model"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator"
@@ -47,7 +46,7 @@ func GetRegistrationHandler(
 			return
 		}
 
-		userid, err := authService.RegisterNewUser(ctx, log, dto.Email, dto.Password)
+		user, err := authService.Register(ctx, log, dto.Email, dto.Password)
 		if err != nil {
 			log.Info("error on registration", sl.Err(err))
 			response := ErrorResponse{
@@ -55,9 +54,7 @@ func GetRegistrationHandler(
 				Message: "error on registration",
 				Error:   "internal error",
 			}
-			if errors.Is(err, models.ErrInternal) ||
-				errors.Is(err, models.ErrInvalidCredentials) ||
-				errors.Is(err, models.ErrUserAlreadyExists) {
+			if models.IsDefinedError(err) {
 				response.Error = err.Error()
 				ctx.JSON(400, response)
 				return
@@ -66,11 +63,15 @@ func GetRegistrationHandler(
 			return
 		}
 
-		log.Info("success register new user", slog.Int64("userid", userid))
+		log.Info(
+			"success register new user",
+			"id", user.ID,
+			"email", user.Email,
+		)
 		response := SuccessResponse{
 			Status:  "ok",
 			Message: "success registration",
-			Data:    GetRegistrationResponseDto(userid),
+			Data:    RegistrationResponseDto{UserId: user.ID},
 		}
 		ctx.JSON(200, response)
 	}

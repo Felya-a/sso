@@ -8,7 +8,7 @@ import (
 
 type UserWithPassword struct {
 	model.UserModel
-	password string
+	Password string
 }
 
 var ValidUser UserWithPassword = UserWithPassword{
@@ -17,10 +17,10 @@ var ValidUser UserWithPassword = UserWithPassword{
 		Email:    "fake@local.com",
 		PassHash: getPassHash("password123"),
 	},
-	password: "password123",
+	Password: "password123",
 }
 
 func getPassHash(password string) []byte {
-	passHash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	passHash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	return passHash
 }

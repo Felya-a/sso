@@ -13,11 +13,11 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetLoginHandler(
+func GetTokenHandler(
 	authService authService.Auth,
 ) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var dto LoginRequestDto
+		var dto TokenRequestDto
 
 		log := logger.Logger()
 		log = log.With(
@@ -46,44 +46,33 @@ func GetLoginHandler(
 			return
 		}
 
-		authorizationCode, err := authService.Login(ctx, log, dto.Email, dto.Password, 1)
+		tokens, err := authService.Token(ctx, log, dto.AuthorizationCode)
 		if err != nil {
-			log.Info("error on login", sl.Err(err))
 			response := ErrorResponse{
 				Status:  "error",
-				Message: "error on login",
+				Message: "error on generate jwt tokens",
 				Error:   "internal error",
 			}
-
 			if models.IsDefinedError(err) {
 				response.Error = err.Error()
 				ctx.JSON(400, response)
 				return
 			}
-
 			ctx.JSON(500, response)
 			return
 		}
 
+		ctx.SetCookie("access_token", tokens.AccessJwtToken, 30*24*60*60, "/", "", true, true)
+		ctx.SetCookie("refresh_token", tokens.RefreshJwtToken, 30*24*60*60, "/", "", true, true)
+
 		response := SuccessResponse{
 			Status:  "ok",
-			Message: "success login",
-			Data:    LoginResponseDto{AuthorizationCode: authorizationCode},
+			Message: "success",
+			Data: TokenResponseDto{
+				AccessToken:  tokens.AccessJwtToken,
+				RefreshToken: tokens.RefreshJwtToken,
+			},
 		}
 		ctx.JSON(200, response)
 	}
 }
-
-// func generateRedirectUrl(baseUrl string, authorizationCode string) (string, error) {
-// 	parsedUrl, err := url.Parse(baseUrl)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// Добавление query-параметров
-// 	params := url.Values{}
-// 	params.Add("authorization_code", authorizationCode)
-// 	parsedUrl.RawQuery = params.Encode()
-
-// 	return parsedUrl.String(), nil
-// }

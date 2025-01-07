@@ -12,7 +12,7 @@ import (
 
 type App struct {
 	GrpcServer *grpcapp.App
-	HttpServer *httpapp.App
+	HttpServer *httpapp.HttpTransport
 }
 
 func New(
@@ -23,7 +23,7 @@ func New(
 	authService authService.Auth,
 ) *App {
 	grpcApp := grpcapp.New(db, log, grpcPort, authService)
-	httpApp := httpapp.New(db, log, httpPort, authService)
+	httpApp := httpapp.New(log, httpPort, authService)
 
 	return &App{GrpcServer: grpcApp, HttpServer: httpApp}
 }

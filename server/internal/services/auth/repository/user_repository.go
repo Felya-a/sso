@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	authModels "sso/internal/services/auth/model"
+	models "sso/internal/services/auth/model"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -16,6 +16,52 @@ type PostgresUserRepository struct {
 
 func NewPostgresUserRepository(db *sqlx.DB) *PostgresUserRepository {
 	return &PostgresUserRepository{db: db}
+}
+
+func (r PostgresUserRepository) GetById(
+	ctx context.Context,
+	id int64,
+) (*models.UserModel, error) {
+	var user models.UserModel
+	err := r.db.Get(&user, `
+		select
+			id,
+			email,
+			password
+		from public.user
+		where id = $1
+	`, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return &models.UserModel{}, nil
+		}
+		return &models.UserModel{}, err
+	}
+
+	return &user, nil
+}
+
+func (r PostgresUserRepository) GetByEmail(
+	ctx context.Context,
+	email string,
+) (*models.UserModel, error) {
+	var user models.UserModel
+	err := r.db.Get(&user, `
+		select
+			id,
+			email,
+			password
+		from public.user
+		where email = $1
+	`, email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return &models.UserModel{}, nil
+		}
+		return &models.UserModel{}, err
+	}
+
+	return &user, nil
 }
 
 func (r PostgresUserRepository) Save(
@@ -40,27 +86,4 @@ func (r PostgresUserRepository) Save(
 	}
 
 	return nil
-}
-
-func (r PostgresUserRepository) GetByEmail(
-	ctx context.Context,
-	email string,
-) (*authModels.UserModel, error) {
-	var user authModels.UserModel
-	err := r.db.Get(&user, `
-		select
-			id,
-			email,
-			password
-		from public.user
-		where email = $1
-	`, email)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return &authModels.UserModel{}, nil
-		}
-		return &authModels.UserModel{}, err
-	}
-
-	return &user, nil
 }

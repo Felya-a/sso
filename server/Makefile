@@ -39,9 +39,19 @@ test:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo -v ./...
 
+test-unfocus:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
+	ginkgo unfocus
+
 test-unit:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
 	ginkgo -v --label-filter=unit ./...
+
+test-unit-cover:
+	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
+	ginkgo -v -cover -coverpkg=./... -coverprofile=coverage.out --label-filter=unit ./... && \
+	go tool cover -html=coverage.out -o coverage.html && \
+	echo "Сформирован файл покрытия - coverage.html"
 
 test-integration:
 	WORKDIR_PATH=${shell pwd} CONFIG_PATH=config/test.env \
@@ -52,6 +62,6 @@ test-watch:
 	ginkgo watch -v ./...
 
 test-coverage:
-	go test -v -coverprofile=tmp/coverage.txt ./...; \
-	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html; \
+	go test -v -coverprofile=tmp/coverage.txt ./... && \
+	go tool cover -html=tmp/coverage.txt -o tmp/coverage.html && \
 	echo "Сформирован файл покрытия - tmp/coverage.html"

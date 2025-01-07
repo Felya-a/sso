@@ -1,19 +1,8 @@
 package http_handlers_v1
 
-import (
-	authModels "sso/internal/services/auth/model"
-)
-
 type UserInfoResponseDto struct {
 	ID    int64  `json:"id"`
 	Email string `json:"email"`
-}
-
-func GetUserInfoResponseDto(user *authModels.UserModel) UserInfoResponseDto {
-	return UserInfoResponseDto{
-		ID:    user.ID,
-		Email: user.Email,
-	}
 }
 
 type LoginRequestDto struct {
@@ -22,11 +11,7 @@ type LoginRequestDto struct {
 }
 
 type LoginResponseDto struct {
-	Token string `json:"token"`
-}
-
-func GetLoginResponseDto(token string) LoginResponseDto {
-	return LoginResponseDto{Token: token}
+	AuthorizationCode string `json:"authorization_code"`
 }
 
 type RegistrationRequestDto struct {
@@ -38,6 +23,16 @@ type RegistrationResponseDto struct {
 	UserId int64 `json:"userid"`
 }
 
-func GetRegistrationResponseDto(userid int64) RegistrationResponseDto {
-	return RegistrationResponseDto{UserId: userid}
+type TokenRequestDto struct {
+	AuthorizationCode string `json:"authorization_code" validate:"required"`
+}
+
+type TokenResponseDto struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+type RefreshResponseDto struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }

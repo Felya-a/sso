@@ -23,9 +23,10 @@ func main() {
 	log := logger.Logger()
 
 	db := utils.MustConnectPostgres(config)
+	redisdb := utils.MustConnectRedis(config)
 	utils.Migrate(db)
 
-	authService := authService.New(db)
+	authService := authService.New(db, redisdb)
 
 	application := app.New(db, log, config.Grpc.Port, config.Http.Port, authService)
 

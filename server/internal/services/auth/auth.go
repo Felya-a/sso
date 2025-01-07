@@ -4,61 +4,127 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"sync"
+	"time"
 
 	"sso/internal/config"
 	"sso/internal/lib/logger/sl"
-	authModels "sso/internal/services/auth/model"
+	models "sso/internal/services/auth/model"
 	"sso/internal/services/auth/repository"
 	usecase "sso/internal/services/auth/use-case"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/redis/go-redis/v9"
 )
 
+const AUTHORIZATION_CODE_TTL = 10 * time.Minute
+
 type Auth interface {
+	Register(
+		ctx context.Context,
+		log *slog.Logger,
+		email string,
+		password string,
+	) (user *models.UserModel, err error)
 	Login(
 		ctx context.Context,
 		log *slog.Logger,
 		email string,
 		password string,
 		appID int,
-	) (token string, err error)
-	RegisterNewUser(
+	) (authorizationCode string, err error)
+	Token(
 		ctx context.Context,
 		log *slog.Logger,
-		email string,
-		password string,
-	) (userID int64, err error)
-	GetUserInfo(
+		authorizationCode string,
+	) (tokens *models.JwtTokens, err error)
+	Refresh(
+		ctx context.Context,
+		log *slog.Logger,
+		refreshToken string,
+	) (tokens *models.JwtTokens, err error)
+	UserInfo(
 		ctx context.Context,
 		log *slog.Logger,
 		token string,
-	) (user *authModels.UserModel, err error)
+	) (user *models.UserModel, err error)
 }
 
 type AuthService struct {
-	authenticateUser usecase.AuthenticateUserUseCase
-	generateToken    usecase.GenerateTokenUseCase
-	parseToken       usecase.ParseTokenUseCase
-	registrationUser usecase.RegistrationUserUseCase
-	mu               sync.Mutex
+	registrationUser          usecase.RegistrationUserUseCase
+	authenticateUser          usecase.AuthenticateUserUseCase
+	generateAuthorizationCode usecase.GenerateAuthorizationCodeUseCase
+	parseAuthorizationCode    usecase.ParseAuthorizationCodeUseCase
+	generateJwtToken          usecase.GenerateJwtTokensUseCase
+	parseAccessJwtToken       usecase.ParseAccessJwtTokenUseCase
+	parseRefreshJwtToken      usecase.ParseRefreshJwtTokenUseCase
 }
 
 func New(
 	db *sqlx.DB,
+	rdb *redis.Client,
 ) *AuthService {
-	userRepository := repository.NewPostgresUserRepository(db)
-	registrationUser := usecase.RegistrationUserUseCase{Users: userRepository}
-	authenticateUser := usecase.AuthenticateUserUseCase{Users: userRepository}
-	generateToken := usecase.GenerateTokenUseCase{TokenTtl: config.Get().TokenTtl}
-	parseToken := usecase.ParseTokenUseCase{Users: userRepository}
+	config := config.Get()
+	usersRepository := repository.NewPostgresUserRepository(db)
+	authorizationCodeRepository := repository.NewRedisAuthorizationCodeRepository(rdb, AUTHORIZATION_CODE_TTL)
+
+	registrationUser := usecase.RegistrationUserUseCase{
+		Users: usersRepository,
+	}
+	authenticateUser := usecase.AuthenticateUserUseCase{
+		Users: usersRepository,
+	}
+	generateJwtToken := usecase.GenerateJwtTokensUseCase{
+		JwtSecret:  config.Jwt.Secret,
+		AccessTtl:  config.Jwt.AccessTtl,
+		RefreshTtl: config.Jwt.RefreshTtl,
+	}
+	generateAuthorizationCode := usecase.GenerateAuthorizationCodeUseCase{
+		AuthorizationCodes: authorizationCodeRepository,
+		JwtSecret:          config.Jwt.Secret,
+	}
+	parseAuthorizationCode := usecase.ParseAuthorizationCodeUseCase{
+		AuthorizationCodes: authorizationCodeRepository,
+		Users:              usersRepository,
+		JwtSecret:          config.Jwt.Secret,
+	}
+	parseAccessJwtToken := usecase.ParseAccessJwtTokenUseCase{
+		Users:     usersRepository,
+		JwtSecret: config.Jwt.Secret,
+	}
+	parseRefreshJwtToken := usecase.ParseRefreshJwtTokenUseCase{
+		Users:     usersRepository,
+		JwtSecret: config.Jwt.Secret,
+	}
 
 	return &AuthService{
-		authenticateUser: authenticateUser,
-		generateToken:    generateToken,
-		parseToken:       parseToken,
-		registrationUser: registrationUser,
+		registrationUser:          registrationUser,
+		authenticateUser:          authenticateUser,
+		generateJwtToken:          generateJwtToken,
+		generateAuthorizationCode: generateAuthorizationCode,
+		parseAuthorizationCode:    parseAuthorizationCode,
+		parseAccessJwtToken:       parseAccessJwtToken,
+		parseRefreshJwtToken:      parseRefreshJwtToken,
 	}
+}
+
+func (a *AuthService) Register(
+	ctx context.Context,
+	log *slog.Logger,
+	email string,
+	password string,
+) (*models.UserModel, error) {
+	user, err := a.registrationUser.Execute(ctx, log, email, password)
+	if err != nil {
+		if models.IsDefinedError(err) {
+			return &models.UserModel{}, err
+		}
+		log.Error("failed on registration new user", sl.Err(err))
+		return &models.UserModel{}, fmt.Errorf("%s: %w", "AuthService", err)
+	}
+
+	log.Info("user success registered", "email", email)
+
+	return user, nil
 }
 
 func (a *AuthService) Login(
@@ -67,74 +133,86 @@ func (a *AuthService) Login(
 	email string,
 	password string,
 	appID int,
-) (token string, err error) {
-	const op = "authService.Login"
-	log = log.With(
-		slog.String("op", op),
-		slog.String("email", email),
-	)
-
+) (authorizationCode string, err error) {
 	user, err := a.authenticateUser.Execute(ctx, log, email, password)
 	if err != nil {
-		log.Error("failed on get user info", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, err)
+		if models.IsDefinedError(err) {
+			return "", err
+		}
+		return "", fmt.Errorf("%s: %w", "AuthService", err)
 	}
 
-	token, err = a.generateToken.Execute(ctx, log, user, config.Get().JWTSecret)
+	authorizationCode, err = a.generateAuthorizationCode.Execute(ctx, log, user, AUTHORIZATION_CODE_TTL)
 	if err != nil {
-		log.Error("failed on generate jwt token", sl.Err(err))
-		return "", fmt.Errorf("%s: %w", op, err)
+		if models.IsDefinedError(err) {
+			return "", err
+		}
+		return "", fmt.Errorf("%s: %w", "AuthService", err)
 	}
 
-	return token, nil
+	return authorizationCode, nil
 }
 
-func (a *AuthService) RegisterNewUser(
+func (a *AuthService) Token(
 	ctx context.Context,
 	log *slog.Logger,
-	email string,
-	password string,
-) (userID int64, err error) {
-	const op = "authService.RegisterNewUser"
-	log = log.With(
-		slog.String("op", op),
-	)
-
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	log.Info("registration new user", "email", email)
-
-	user, err := a.registrationUser.Execute(ctx, log, email, password)
+	authorizationCode string,
+) (*models.JwtTokens, error) {
+	user, err := a.parseAuthorizationCode.Execute(ctx, log, authorizationCode)
 	if err != nil {
-		log.Error("failed on registration new user", sl.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		if models.IsDefinedError(err) {
+			return &models.JwtTokens{}, err
+		}
+		return &models.JwtTokens{}, fmt.Errorf("%s: %w", "AuthService", err)
 	}
 
-	log.Info("user success registered", "email", email)
+	tokens, err := a.generateJwtToken.Execute(ctx, log, user)
+	if err != nil {
+		if models.IsDefinedError(err) {
+			return &models.JwtTokens{}, err
+		}
+		return &models.JwtTokens{}, fmt.Errorf("%s: %w", "AuthService", err)
+	}
 
-	return user.ID, nil
+	return tokens, nil
 }
 
-func (a *AuthService) GetUserInfo(
+func (a *AuthService) Refresh(
+	ctx context.Context,
+	log *slog.Logger,
+	refreshToken string,
+) (*models.JwtTokens, error) {
+	user, err := a.parseRefreshJwtToken.Execute(ctx, log, refreshToken)
+	if err != nil {
+		if models.IsDefinedError(err) {
+			return &models.JwtTokens{}, err
+		}
+		return &models.JwtTokens{}, fmt.Errorf("%s: %w", "AuthService", err)
+	}
+
+	tokens, err := a.generateJwtToken.Execute(ctx, log, user)
+	if err != nil {
+		if models.IsDefinedError(err) {
+			return &models.JwtTokens{}, err
+		}
+		return &models.JwtTokens{}, fmt.Errorf("%s: %w", "AuthService", err)
+	}
+
+	return tokens, nil
+}
+
+func (a *AuthService) UserInfo(
 	ctx context.Context,
 	log *slog.Logger,
 	token string,
-) (user *authModels.UserModel, err error) {
-	const op = "authService.GetUserInfo"
-	log = log.With(
-		slog.String("op", op),
-	)
-
-	log.Info("try parse jwt token", "token", token)
-
-	user, err = a.parseToken.Execute(ctx, log, token, config.Get().JWTSecret)
+) (*models.UserModel, error) {
+	user, err := a.parseAccessJwtToken.Execute(ctx, log, token)
 	if err != nil {
-		log.Error("failed on parse jwt token", sl.Err(err))
-		return &authModels.UserModel{}, err
+		if models.IsDefinedError(err) {
+			return &models.UserModel{}, err
+		}
+		return &models.UserModel{}, fmt.Errorf("%s: %w", "AuthService", err)
 	}
 
-	log.Info("jwt success parsed", "userId", user.ID)
-
-	return user, err
+	return user, nil
 }

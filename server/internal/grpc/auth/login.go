@@ -6,7 +6,7 @@ import (
 	"log/slog"
 
 	"sso/internal/lib/logger"
-	models "sso/internal/services/auth/model/errors"
+	models "sso/internal/services/auth/model"
 
 	ssov1 "github.com/Felya-a/chat-app-protos/gen/go/sso"
 	"github.com/go-playground/validator"
@@ -40,7 +40,7 @@ func (s *serverApi) Login(
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	token, err := s.auth.Login(ctx, log, dto.Email, dto.Password, dto.AppId)
+	authorizationCode, err := s.auth.Login(ctx, log, dto.Email, dto.Password, dto.AppId)
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
 			return nil, status.Error(codes.Internal, models.ErrInvalidCredentials.Error())
@@ -48,5 +48,6 @@ func (s *serverApi) Login(
 		return nil, status.Error(codes.Internal, "Internal error")
 	}
 
-	return &ssov1.LoginResponse{Token: token}, nil
+	// TODO: изменить формат сообщений protobuf. Не должно быть "Token"
+	return &ssov1.LoginResponse{Token: authorizationCode}, nil
 }
