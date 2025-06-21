@@ -11,7 +11,7 @@ export interface BaseFailedResponse {
 }
 
 export interface LoginResponseDto {
-    token: string
+    authorization_code: string
 }
 
 export interface UserInfoResponseDto {

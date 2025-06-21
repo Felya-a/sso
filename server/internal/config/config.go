@@ -78,6 +78,8 @@ func MustLoad() Config {
 
 	fullConfigPath := getAbsoluteConfigPath(configPath)
 
+	fmt.Println(fullConfigPath)
+
 	if _, err := os.Stat(fullConfigPath); os.IsNotExist(err) {
 		panic("config file does not exist: " + fullConfigPath)
 	}

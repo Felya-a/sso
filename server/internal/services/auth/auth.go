@@ -32,7 +32,7 @@ type Auth interface {
 		password string,
 		appID int,
 	) (authorizationCode string, err error)
-	Token(
+	Tokens(
 		ctx context.Context,
 		log *slog.Logger,
 		authorizationCode string,
@@ -45,7 +45,7 @@ type Auth interface {
 	UserInfo(
 		ctx context.Context,
 		log *slog.Logger,
-		token string,
+		accessToken string,
 	) (user *models.UserModel, err error)
 }
 
@@ -153,7 +153,7 @@ func (a *AuthService) Login(
 	return authorizationCode, nil
 }
 
-func (a *AuthService) Token(
+func (a *AuthService) Tokens(
 	ctx context.Context,
 	log *slog.Logger,
 	authorizationCode string,
@@ -204,9 +204,9 @@ func (a *AuthService) Refresh(
 func (a *AuthService) UserInfo(
 	ctx context.Context,
 	log *slog.Logger,
-	token string,
+	accessToken string,
 ) (*models.UserModel, error) {
-	user, err := a.parseAccessJwtToken.Execute(ctx, log, token)
+	user, err := a.parseAccessJwtToken.Execute(ctx, log, accessToken)
 	if err != nil {
 		if models.IsDefinedError(err) {
 			return &models.UserModel{}, err

@@ -10,6 +10,7 @@ import (
 	"sso/internal/config"
 	"sso/internal/lib/logger/sl"
 	authService "sso/internal/services/auth"
+	"sso/internal/transport/http/middleware"
 	"sso/internal/transport/http/router"
 
 	"github.com/gin-gonic/gin"
@@ -28,7 +29,7 @@ func New(
 ) *HttpTransport {
 	gin.SetMode(getGinMode())
 	handler := gin.Default()
-	handler.Use(CORSMiddleware())
+	handler.Use(middleware.CORSMiddleware())
 
 	router.SetupRoutes(handler, authService)
 
@@ -90,21 +91,5 @@ func (a *HttpTransport) Stop() {
 
 	if err := a.httpServer.Shutdown(ctx); err != nil {
 		a.log.Error("Server forced to shutdown: ", sl.Err(err))
-	}
-}
-
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-		c.Header("Access-Control-Allow-Methods", "POST,HEAD,PATCH, OPTIONS, GET, PUT")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
 	}
 }

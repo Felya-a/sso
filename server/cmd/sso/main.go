@@ -33,17 +33,17 @@ func main() {
 	go application.GrpcServer.MustRun()
 	go application.HttpServer.MustRun()
 
-	log.Info("Starting application", slog.Any("env", config.Env))
+	log.Info("starting application", slog.Any("env", config.Env))
 
 	// Graceful shutdown
 	sgnl := gracefulShutdown()
-	log.Info("Stopping application", slog.String("signal", sgnl.String()))
+	log.Info("stopping application", slog.String("signal", sgnl.String()))
 
 	application.GrpcServer.Stop()
 	application.HttpServer.Stop()
 	db.Close()
 
-	log.Info("Application stopped")
+	log.Info("application stopped")
 }
 
 func gracefulShutdown() os.Signal {

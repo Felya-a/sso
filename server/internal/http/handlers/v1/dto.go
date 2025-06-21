@@ -15,8 +15,9 @@ type LoginResponseDto struct {
 }
 
 type RegistrationRequestDto struct {
-	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6,max=20"`
+	Email    string `json:"email" validate:"required,email"`
+	NickName string `json:"nickname" validate:"required"`
 }
 
 type RegistrationResponseDto struct {

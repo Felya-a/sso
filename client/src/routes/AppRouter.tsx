@@ -1,13 +1,14 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 import AuthLayout from "../layouts/AuthLayout"
 import LoginPage from "../pages/LoginPage/LoginPage"
 import Page404 from "../pages/Page404/Page404"
+import RegisterPage from "../pages/RegisterPage"
 
 const AppRouter = () => {
 	return (
 		<Routes>
 			<Route
-				path="/login"
+				path="/"
 				element={
 					<AuthLayout>
 						<LoginPage />
@@ -16,20 +17,22 @@ const AppRouter = () => {
 			/>
 
 			<Route
+				path="/register"
+				element={
+					<AuthLayout>
+						<RegisterPage />
+					</AuthLayout>
+				}
+			/>
+
+			{/* <Route
 				path="/"
 				element={
-					// <>
-					// 	<div>Userid: {authStore.userid}</div>
-					// 	<div>Email: {authStore.email}</div>
-					// 	<div>Token: {authStore.token}</div>
-					// 	<div>Path=/</div>
-					// 	<button onClick={handleButton}>button</button>
-					// </>
 					<AuthLayout>
 						<LoginPage />
 					</AuthLayout>
 				}
-			/>
+			/> */}
 
 			<Route path="*" element={<Page404 />} />
 		</Routes>

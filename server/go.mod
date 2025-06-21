@@ -3,7 +3,7 @@ module sso
 go 1.22.6
 
 require (
-	github.com/Felya-a/chat-app-protos v0.0.5
+	github.com/Felya-a/chat-app-protos v0.0.6
 	github.com/fatih/color v1.17.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt/v5 v5.2.1

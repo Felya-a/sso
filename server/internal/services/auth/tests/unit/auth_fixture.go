@@ -11,7 +11,7 @@ type UserWithPassword struct {
 	Password string
 }
 
-var ValidUser UserWithPassword = UserWithPassword{
+var ValidUser = UserWithPassword{
 	UserModel: model.UserModel{
 		ID:       1,
 		Email:    "fake@local.com",

@@ -5,6 +5,7 @@ import { authStore } from "../../stores/AuthStore"
 import { InputTitle, LoginPageContent, LoginPageWrapper } from "./styles"
 import { reaction } from "mobx"
 import { useNavigate } from "react-router-dom"
+import { Logo } from "../../layouts/AuthLayout/styles"
 
 export default observer(function () {
     const navigate = useNavigate();
@@ -22,26 +23,22 @@ export default observer(function () {
 		authStore.password = event.currentTarget.value
 	}
 
-	useEffect(() => {
-		const disposer = reaction(
-			() => authStore.isAuthenticated,
-			newValue => {
-				if (newValue === true) {
-					navigate("/success")
-				}
-			}
-		)
-
-		return () => disposer()
-	}, [navigate])
+	// useEffect(() => {
+	// 	if (authStore.isAuthenticated) {
+	// 		navigate("/success")
+	// 	}
+	// }, [authStore.isAuthenticated])
 
 	return (
 		<LoginPageWrapper>
+			<Logo>
+				Авторизация
+			</Logo>
 			<LoginPageContent>
 				<InputTitle>Email</InputTitle>
-				<Input onChange={handleChangeEmail} />
+				<Input value={authStore.email!} onChange={handleChangeEmail} />
 				<InputTitle>Пароль</InputTitle>
-				<Input type="password" onChange={handleChangePassword} />
+				<Input type="password" value={authStore.password!} onChange={handleChangePassword} />
 				<Button type="primary" loading={authStore.isLoading} onClick={handleSubmit}>
 					Войти
 				</Button>

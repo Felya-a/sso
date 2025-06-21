@@ -46,7 +46,7 @@ func GetTokenHandler(
 			return
 		}
 
-		tokens, err := authService.Token(ctx, log, dto.AuthorizationCode)
+		tokens, err := authService.Tokens(ctx, log, dto.AuthorizationCode)
 		if err != nil {
 			response := ErrorResponse{
 				Status:  "error",

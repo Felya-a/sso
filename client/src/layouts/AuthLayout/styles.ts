@@ -18,7 +18,7 @@ export const AuthContent = styled.div`
 	border-radius: 15px;
     background-color: rgb(15 27 50);
 
-	grid-template-rows: 2fr 4fr 1fr;
+	grid-template-rows: 4fr 1fr;
 `
 
 // export const BackButton = styled.div`

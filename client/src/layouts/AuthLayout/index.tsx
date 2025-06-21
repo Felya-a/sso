@@ -12,9 +12,6 @@ const AuthLayout: FC<AuthLayoutProps> = ({ children }) => {
 	return (
 		<AuthWrapper>
 			<AuthContent>
-				<Logo>
-					Авторизация
-				</Logo>
 				{children}
 			</AuthContent>
 		</AuthWrapper>
