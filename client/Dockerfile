@@ -9,7 +9,7 @@ ARG REACT_APP_SSO_SERVER_URL
 ENV REACT_APP_SSO_SERVER_URL=$REACT_APP_SSO_SERVER_URL
 
 COPY . .
-RUN npm run build
+# RUN npm run build # Не хватало ресурсов для билда на сервере
 
 # ----------------------------------------------------------------------------------------
 
