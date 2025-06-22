@@ -23,8 +23,8 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t github_runner/sso-server:test ./server
           docker build -t github_runner/sso-client:stage --build-arg REACT_APP_SSO_SERVER_URL=http://talk.ifedoseev.ru:8080/api/v1 ./client
+          docker build -t github_runner/sso-server:test ./server
           docker tag github_runner/sso-server:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
           docker tag github_runner/sso-client:stage ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
