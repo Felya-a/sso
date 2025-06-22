@@ -5,11 +5,8 @@ WORKDIR /build
 COPY ./package.json ./
 RUN npm i --force --loglevel=error
 
-ARG REACT_APP_SSO_SERVER_URL
-ENV REACT_APP_SSO_SERVER_URL=$REACT_APP_SSO_SERVER_URL
-
 COPY . .
-# RUN npm run build # Не хватало ресурсов для билда на сервере
+RUN npm run build
 
 # ----------------------------------------------------------------------------------------
 

@@ -17,20 +17,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Log in to Docker Hub
+      - name: Copy ENV variables
         run: |
-          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login --password-stdin -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" "${{ secrets.DOCKER_REGISTRY_HOST }}"
+          cp /home/envs/.env.sso.client .env
 
       - name: Build Docker images
         run: |
-          docker build -t github_runner/sso-client:stage --build-arg REACT_APP_SSO_SERVER_URL=http://talk.ifedoseev.ru:8080/api/v1 ./client
+          docker build -t github_runner/sso-client:stage ./client
           docker build -t github_runner/sso-server:test ./server
           docker tag github_runner/sso-server:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
           docker tag github_runner/sso-client:stage ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
-      - name: Push Test Docker image
-        run: |
-          docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
+      # - name: Push Test Docker image
+      #   run: |
+      #     docker push ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test
 
   # test:
   #   runs-on: self-hosted
@@ -91,6 +91,10 @@ jobs:
     environment: stage
 
     steps:
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login --password-stdin -u "${{ secrets.DOCKER_REGISTRY_USERNAME }}" "${{ secrets.DOCKER_REGISTRY_HOST }}"
+
       - name: Push Stage Docker image
         run: |
           docker tag ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:test ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage
@@ -106,16 +110,16 @@ jobs:
             ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-server:stage \
             ${{ secrets.DOCKER_REGISTRY_HOST }}/sso-client:stage
 
-  deploy-stage:
-    runs-on: self-hosted
-    needs: push-image
-    environment: stage
+  # deploy-stage:
+  #   runs-on: self-hosted
+  #   needs: push-image
+  #   environment: stage
 
-    steps:
-      - name: Start Integration stand
-        env:
-          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-        run: |
-          echo "$DEPLOY_SSH_KEY" > deploy_key.pem
-          chmod 600 deploy_key.pem
-          ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/stage && docker compose down && docker compose up -d --build --force-recreate"
+  #   steps:
+  #     - name: Start Integration stand
+  #       env:
+  #         DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+  #       run: |
+  #         echo "$DEPLOY_SSH_KEY" > deploy_key.pem
+  #         chmod 600 deploy_key.pem
+  #         ssh -i deploy_key.pem -o StrictHostKeyChecking=no root@ifedoseev.ru "cd /root/chat_app/stage && docker compose down && docker compose up -d --build --force-recreate"
